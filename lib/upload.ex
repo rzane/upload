@@ -38,6 +38,9 @@ defmodule Upload do
   def cast(%Plug.Upload{filename: filename, path: path}, opts) do
     do_cast(filename, path, opts)
   end
+  def cast(_not_uploadable, _opts) do
+    {:error, "not uploadable"}
+  end
 
   @doc """
   Cast a file path to an `%Upload{}`.
