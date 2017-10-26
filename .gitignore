@@ -1,0 +1,9 @@
+/_build/
+/cover/
+/deps/
+/doc/
+/priv/static/
+/.fetch
+erl_crash.dump
+*.ez
+.DS_Store
