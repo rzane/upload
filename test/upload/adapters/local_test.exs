@@ -14,13 +14,13 @@ defmodule Upload.Adapters.LocalTest do
 
   test "transfer/1" do
     assert {:ok, upload} = Upload.cast_path(@fixture)
-    assert {:ok, %Upload{key: key, status: :completed}} = Adapter.transfer(upload)
+    assert {:ok, %Upload{key: key, status: :transferred}} = Adapter.transfer(upload)
     assert File.exists?(Path.join(Adapter.storage_path, key))
   end
 
   test "transfer/1 with prefix" do
     assert {:ok, upload} = Upload.cast_path(@fixture, prefix: ["meatloaf"])
-    assert {:ok, %Upload{key: key, status: :completed}} = Adapter.transfer(upload)
+    assert {:ok, %Upload{key: key, status: :transferred}} = Adapter.transfer(upload)
     assert File.exists?(Path.join(Adapter.storage_path, key))
   end
 

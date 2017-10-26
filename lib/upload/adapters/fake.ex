@@ -7,7 +7,7 @@ defmodule Upload.Adapters.Fake do
   end
 
   @impl true
-  def transfer(%Upload{key: key, path: path} = upload) do
-    {:ok, %Upload{upload | status: :completed}}
+  def transfer(%Upload{} = upload) do
+    {:ok, %Upload{upload | status: :transferred}}
   end
 end

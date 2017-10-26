@@ -54,7 +54,7 @@ defmodule Upload.Adapters.Test do
 
   @impl true
   def transfer(%Upload{} = upload) do
-    upload = %Upload{upload | status: :completed}
+    upload = %Upload{upload | status: :transferred}
     put_upload(upload)
     {:ok, upload}
   end

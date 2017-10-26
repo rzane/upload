@@ -3,7 +3,7 @@
 use Mix.Config
 
 config :upload, Upload,
-  adapter: Upload.Adapters.Local
+  adapter: Upload.Adapters.Test
 
 config :upload, Upload.Adapters.S3,
   bucket: "my_bucket_name"

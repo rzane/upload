@@ -7,7 +7,7 @@ defmodule Upload.Adapter do
   end
 
   @callback get_url(String.t) :: String.t
-  @callback transfer(Upload.t) :: {:ok, Upload.t} | {:error, String.t}
+  @callback transfer(Upload.t) :: {:ok, Upload.transferred} | {:error, any}
 
   @doc """
   Join URL segments.
@@ -21,10 +21,14 @@ defmodule Upload.Adapter do
       "/foo/bar.png"
 
   """
+  @spec join_url(String.t, String.t) :: String.t
   def join_url(a, b) do
     String.trim_trailing(a, "/") <> "/" <> String.trim_leading(b, "/")
   end
 
+  @doc """
+  Get a configuration variable and fallback to the default.
+  """
   def get_config(config, key, default) do
     if Keyword.has_key?(config, key) do
       fetch_config!(config, key)
@@ -33,6 +37,9 @@ defmodule Upload.Adapter do
     end
   end
 
+  @doc """
+  Get a configuration variable, or raise an error.
+  """
   def fetch_config!(config, key) do
     with {:system, varname} <- Keyword.fetch!(config, key) do
       System.get_env(varname)

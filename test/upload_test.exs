@@ -1,16 +1,16 @@
 defmodule UploadTest do
   use ExUnit.Case
-  doctest Upload, except: [cast: 2, cast_path: 2, get_key: 2]
+  doctest Upload, except: [generate_key: 2]
 
   @fixture Path.expand("./fixtures/text.txt", __DIR__)
   @plug %Plug.Upload{path: @fixture, filename: "text.txt"}
 
-  test "get_key/1" do
-    assert Upload.get_key("phoenix.png") =~ ~r"^[a-z0-9]{32}\.png$"
+  test "generate_key/1" do
+    assert Upload.generate_key("phoenix.png") =~ ~r"^[a-z0-9]{32}\.png$"
   end
 
-  test "get_key/2" do
-    assert Upload.get_key("phoenix.png", prefix: ["logos"]) =~ ~r"^logos/[a-z0-9]{32}\.png$"
+  test "generate_key/2" do
+    assert Upload.generate_key("phoenix.png", prefix: ["logos"]) =~ ~r"^logos/[a-z0-9]{32}\.png$"
   end
 
   test "cast/1 with a %Plug.Upload{}" do

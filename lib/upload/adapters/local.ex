@@ -41,6 +41,6 @@ defmodule Upload.Adapters.Local do
 
     with :ok <- File.mkdir_p(directory),
          :ok <- File.cp(path, filename),
-         do: {:ok, %Upload{upload | status: :completed}}
+         do: {:ok, %Upload{upload | status: :transferred}}
   end
 end
