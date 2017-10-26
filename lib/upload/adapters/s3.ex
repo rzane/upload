@@ -17,8 +17,11 @@ defmodule Upload.Adapters.S3 do
   @doc """
   The base URL that all resources are hosted on.
 
+  ## Examples
+
       iex> Upload.Adapters.S3.uri
       "http://my_bucket_name.s3.amazonaws.com"
+
   """
   def uri do
     get_config(@config, :uri, "http://#{bucket()}.s3.amazonaws.com")
