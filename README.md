@@ -76,14 +76,18 @@ plug Plug.Static, at: "/", from: :your_app, gzip: false, only: ~w(uploads)
 
 #### Configurable Adapters
 
-For now, there are only two adapters:
+For now, there are four adapters:
 
 * `Upload.Adapters.Local` - Save files to your local filesystem.
 * `Upload.Adapters.S3` - Save files to Amazon S3.
+* `Upload.Adapters.Fake` - Don't actually save the files at all.
+* `Upload.Adapters.Test` - Keep uploaded files in state, so that you can assert.
 
 ##### `Upload.Adapters.Local`
 
-`Upload` requires absolutely no configuration. Here are the default values:
+Out of the box, `Upload` is ready to go with some sane defaults (for development, at least).
+
+Here are the default values:
 
 ```elixir
 config :upload, Upload,
@@ -101,9 +105,39 @@ To use the AWS adapter, you'll to install [ExAws](https://github.com/ex-aws/ex_a
 Then, you'll need to following configuration:
 
 ```elixir
-config :upload, Upload,
-  adapter: Upload.Adapters.S3
+config :upload, Upload, adapter: Upload.Adapters.S3
+config :upload, Upload.Adapters.S3, bucket: "your_bucket_name"
+```
 
-config :upload, Upload.Adapters.S3,
-  bucket: "your_bucket_name"
+#### `Upload.Adapters.Test`
+
+To use this adapter, you'll need to the following configuration:
+
+```elixir
+config :upload, Upload, adapter: Upload.Adapters.Test
+```
+
+In your tests, you can make assertions:
+
+```elixir
+setup do
+  {:ok, _} = start_supervised(Upload.Adapters.Test)
+  :ok
+end
+
+test "files are uploaded" do
+  assert {:ok, upload} = Upload.cast_path("/path/to/file.txt")
+  assert {:ok, upload} = Upload.transfer(upload)
+  assert length(Upload.Adapters.Test.get_uploads()) == 1
+end
+```
+
+#### `Upload.Adapters.Fake`
+
+This adapter does pretty much nothing. It makes absolutely no attempt to persist uploads. This can be useful in unit tests where you want to completely bypass uploading.
+
+To use this adapter, you'll need the following configuration:
+
+```elixir
+config :upload, Upload, adapter: Upload.Adapters.Fake
 ```
