@@ -96,7 +96,7 @@ defmodule Upload do
 
     opts
     |> Keyword.get(:prefix, [])
-    |> Path.join("#{uuid}#{ext}")
+    |> Path.join(uuid <> ext)
   end
 
   @doc """
