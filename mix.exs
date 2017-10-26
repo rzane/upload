@@ -6,11 +6,15 @@ defmodule Upload.Mixfile do
       app: :upload,
       version: "0.1.0",
       elixir: "~> 1.5",
+      elixirc_paths: elixirc_paths(Mix.env),
       start_permanent: Mix.env == :prod,
       deps: deps(),
       aliases: aliases()
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_),     do: ["lib"]
 
   # Run "mix help compile.app" to learn about applications.
   def application do
@@ -30,6 +34,9 @@ defmodule Upload.Mixfile do
       {:hackney, "1.6.3 or 1.6.5 or 1.7.1 or 1.8.6 or ~> 1.9", optional: true},
       {:poison, ">= 1.2.0", optional: true},
       {:sweet_xml, "~> 0.6", optional: true},
+
+      # Ecto integration
+      {:ecto, ">= 0.0.0", optional: true},
 
       {:mix_test_watch, "~> 0.3", only: :dev, runtime: false}
     ]

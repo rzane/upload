@@ -39,7 +39,7 @@ defmodule Upload do
     do_cast(filename, path, opts)
   end
   def cast(_not_uploadable, _opts) do
-    {:error, "is not uploadable"}
+    {:error, :invalid}
   end
 
   @doc """
@@ -74,7 +74,7 @@ defmodule Upload do
     |> do_cast(path, opts)
   end
   def cast_path(_, _opts) do
-    {:error, "is not uploadable"}
+    {:error, :invalid}
   end
 
   defp do_cast(filename, path, opts) do
