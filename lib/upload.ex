@@ -91,12 +91,12 @@ defmodule Upload do
 
   """
   def get_key(filename, opts \\ []) when is_binary(filename) do
-    uuid      = UUID.uuid5(:nil, filename)
-    extension = get_extension(filename)
+    uuid = UUID.uuid4(:hex)
+    ext  = get_extension(filename)
 
     opts
     |> Keyword.get(:prefix, [])
-    |> Path.join("#{uuid}#{extension}")
+    |> Path.join("#{uuid}#{ext}")
   end
 
   @doc """
