@@ -66,10 +66,15 @@ defmodule Upload do
       }}
 
   """
-  def cast_path(path, opts \\ []) when is_binary(path) do
+  def cast_path(path, opts \\ [])
+  def cast_path(%Upload{} = upload, _opts), do: upload
+  def cast_path(path, opts) when is_binary(path) do
     path
     |> Path.basename
     |> do_cast(path, opts)
+  end
+  def cast_path(_, _opts) do
+    {:error, "is not uploadable"}
   end
 
   defp do_cast(filename, path, opts) do
