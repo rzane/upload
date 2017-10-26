@@ -8,7 +8,8 @@ defmodule Upload.Mixfile do
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
       deps: deps(),
-      aliases: aliases()
+      aliases: aliases(),
+      dialyzer: [plt_add_apps: [:ecto, :ex_aws]]
     ]
   end
 
@@ -34,7 +35,8 @@ defmodule Upload.Mixfile do
       # Ecto integration
       {:ecto, ">= 0.0.0", optional: true},
 
-      {:mix_test_watch, "~> 0.3", only: :dev, runtime: false}
+      {:mix_test_watch, "~> 0.3", only: :dev, runtime: false},
+      {:dialyxir, "~> 0.5", only: :dev, runtime: false}
     ]
   end
 
