@@ -3,7 +3,7 @@ defmodule Upload.Ecto do
     uploader = Keyword.get(opts, :uploader, Upload)
 
     if file = Map.get(params, Atom.to_string(field)) do
-      case uploader.cast(file) do
+      case uploader.cast(file, Keyword.delete(opts, :uploader)) do
         {:ok, upload} ->
           put_upload(changeset, field, upload, opts)
 
