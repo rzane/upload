@@ -7,8 +7,8 @@ defmodule Upload.Ecto do
         {:ok, upload} ->
           put_upload(changeset, field, upload, opts)
 
-        {:error, _} ->
-          add_error(changeset, field, "is invalid")
+        {:error, message} when is_binary(message) ->
+          add_error(changeset, field, message)
       end
     else
       changeset
