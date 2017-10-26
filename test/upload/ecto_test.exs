@@ -23,6 +23,7 @@ defmodule Upload.EctoTest do
   defmodule CustomUploader do
     def cast(value, _opts), do: {:error, "cast: #{value}"}
     def cast_path(value, _opts), do: {:error, "cast path: #{value}"}
+    def transfer(_value), do: {:error, "PANIC!!!"}
   end
 
   setup do
@@ -67,8 +68,12 @@ defmodule Upload.EctoTest do
       assert get_field(changeset, :logo)
     end
 
-    test "fall back to an ambiguous error message"
-    test "accepts custom uploader and handles errors"
+    test "accepts custom uploader and handles errors", %{upload: upload} do
+      changeset = Company.change
+      changeset = Upload.Ecto.put_upload(changeset, :logo, upload, with: CustomUploader)
+      changeset = run_prepared_changes(changeset)
+      assert changeset.errors == [logo: {"PANIC!!!", []}]
+    end
   end
 
   describe "cast_upload/3" do
