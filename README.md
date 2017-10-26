@@ -50,7 +50,7 @@ Cast the upload in your changeset:
 ```elixir
 def changeset(struct, attrs \\ %{}) do
   struct
-  |> cast(attrs, [:name])
+  |> cast(attrs, [])
   |> Upload.Ecto.cast_upload(:logo, prefix: ["logos"])
 end
 ```
@@ -63,7 +63,7 @@ def create(conn, %{"logo" => logo}) do
 
   case Repo.insert(changeset) do
     {:ok, company} ->
-      # Insert succeeded, now you can get the URL:
+      # Insert succeeded. Now, you can get the URL:
       Upload.get_url(company.logo)
 
     {:error, changeset} ->
