@@ -23,7 +23,7 @@ defmodule UploadTest do
 
   test "cast/1 with an %Upload{}" do
     assert {:ok, upload} = Upload.cast_path(@fixture)
-    assert Upload.cast(upload) == upload
+    assert {:ok, ^upload} = Upload.cast(upload)
   end
 
   test "cast_path/1" do

@@ -53,7 +53,7 @@ defmodule Upload do
   @spec cast_path(uploadable_path, list) ::
     {:ok, Upload.t} | {:error, String.t | :not_uploadable}
   def cast_path(path, opts \\ [])
-  def cast_path(%Upload{} = upload, _opts), do: upload
+  def cast_path(%Upload{} = upload, _opts), do: {:ok, upload}
   def cast_path(path, opts) when is_binary(path) do
     path
     |> Path.basename
