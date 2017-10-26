@@ -25,7 +25,7 @@ with {:ok, upload} <- Upload.cast_path("/path/to/file.txt"),
      do: {:ok, Upload.get_url(upload.key)}
 ```
 
-#### Ecto Integration
+### Ecto Integration
 
 Add a column to store a logo:
 
@@ -34,6 +34,14 @@ def change do
   alter table(:companies) do
     add :logo, :string
   end
+end
+```
+
+Add a field to your schema:
+
+```elixir
+schema "companies" do
+  field :logo, :string
 end
 ```
 
@@ -64,7 +72,7 @@ def create(conn, %{"logo" => logo}) do
 end
 ```
 
-#### Serving static files
+### Serving static files
 
 In order to serve the files, you'll need to setup `Plug.Static`.
 
@@ -74,7 +82,7 @@ If you're using Phoenix, you can add this line to `endpoint.ex`:
 plug Plug.Static, at: "/", from: :your_app, gzip: false, only: ~w(uploads)
 ```
 
-#### Configurable Adapters
+## Configuration
 
 For now, there are four adapters:
 
@@ -83,7 +91,7 @@ For now, there are four adapters:
 * `Upload.Adapters.Fake` - Don't actually save the files at all.
 * `Upload.Adapters.Test` - Keep uploaded files in state, so that you can assert.
 
-##### `Upload.Adapters.Local`
+### `Upload.Adapters.Local`
 
 Out of the box, `Upload` is ready to go with some sane defaults (for development, at least).
 
@@ -98,7 +106,7 @@ config :upload, Upload.Adapters.Local,
   public_path: "/uploads"
 ```
 
-##### `Upload.Adapters.S3`
+### `Upload.Adapters.S3`
 
 To use the AWS adapter, you'll to install [ExAws](https://github.com/ex-aws/ex_aws).
 
@@ -109,7 +117,7 @@ config :upload, Upload, adapter: Upload.Adapters.S3
 config :upload, Upload.Adapters.S3, bucket: "your_bucket_name"
 ```
 
-#### `Upload.Adapters.Test`
+### `Upload.Adapters.Test`
 
 To use this adapter, you'll need to the following configuration:
 
@@ -132,7 +140,7 @@ test "files are uploaded" do
 end
 ```
 
-#### `Upload.Adapters.Fake`
+### `Upload.Adapters.Fake`
 
 This adapter does pretty much nothing. It makes absolutely no attempt to persist uploads. This can be useful in unit tests where you want to completely bypass uploading.
 
