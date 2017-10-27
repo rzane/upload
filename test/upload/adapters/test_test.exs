@@ -6,6 +6,7 @@ defmodule Upload.Adapters.TestTest do
   doctest Upload.Adapters.Test
 
   @fixture Path.expand("../../fixtures/text.txt", __DIR__)
+  @upload %Upload{path: @fixture, filename: "text.txt", key: "foo/text.txt"}
 
   setup do
     {:ok, _} = start_supervised(Upload.Adapters.Test)
@@ -14,28 +15,14 @@ defmodule Upload.Adapters.TestTest do
 
   test "get_uploads/1 and put_upload/1" do
     assert Adapter.get_uploads == %{}
-
-    Adapter.put_upload(%Upload{
-      key: "123.png",
-      path: "/path/to/foo.png",
-      filename: "foo.png"
-    })
-
-    assert Adapter.get_uploads == %{
-      "123.png" => %Upload{
-        filename: "foo.png",
-        key: "123.png",
-        path: "/path/to/foo.png",
-        status: :pending
-      }
-    }
+    Adapter.put_upload(@upload)
+    assert Adapter.get_uploads == %{"foo/text.txt" => @upload}
   end
 
   test "transfer/1 adds the upload to state" do
     assert Adapter.get_uploads == %{}
-    assert {:ok, upload} = Upload.cast_path(@fixture)
-    assert {:ok, %Upload{key: key}} = Adapter.transfer(upload)
-    assert %Upload{} = Map.get(Adapter.get_uploads(), key)
+    assert {:ok, %Upload{key: key}} = Adapter.transfer(@upload)
+    assert Map.get(Adapter.get_uploads(), key) == %Upload{@upload | status: :transferred}
   end
 
   test "get_url/1 just returns the key" do
