@@ -149,7 +149,7 @@ end
 test "files are uploaded" do
   assert {:ok, upload} = Upload.cast_path("/path/to/file.txt")
   assert {:ok, upload} = Upload.transfer(upload)
-  assert length(Upload.Adapters.Test.get_uploads()) == 1
+  assert Map.size(Upload.Adapters.Test.get_uploads()) == 1
 end
 ```
 
