@@ -12,6 +12,16 @@ defmodule UploadTest do
   @fixture Path.expand("./fixtures/text.txt", __DIR__)
   @plug %Plug.Upload{path: @fixture, filename: "text.txt"}
 
+  test "get_url/1 and transfer/1" do
+    start_supervised(Upload.Adapters.Test)
+
+    assert {:ok, upload} = Upload.cast_path(@fixture)
+    assert {:ok, upload} = Upload.transfer(upload)
+
+    assert Upload.get_url(upload) == upload.key
+    assert Upload.get_url(upload.key) == upload.key
+  end
+
   test "generate_key/1" do
     assert Upload.generate_key("phoenix.png") =~ ~r"^[a-z0-9]{32}\.png$"
   end

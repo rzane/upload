@@ -2,6 +2,31 @@ if Code.ensure_compiled? Ecto do
   defmodule Upload.Ecto do
     @doc """
     Casts an upload in the params under the given key, uploads it, and assigns it to the field.
+
+    Any options passed to this function will be passed through to `Upload.cast`.
+
+    You can also provide an option `:with`, which will allow you to use a custom uploader. You can use this mechanism to add validation to your file uploads. See the documentation about `Upload.Uploader` for more information.
+
+    ## Example
+
+        def changeset(user, params \\ %{}) do
+          user
+          |> cast(params, [:name])
+          |> Upload.Ecto.cast_upload(:logo)
+        end
+
+        def changeset(user, params \\ %{}) do
+          user
+          |> cast(params, [:name])
+          |> Upload.Ecto.cast_upload(:logo, prefix: ["logos"])
+        end
+
+        def changeset(user, params \\ %{}) do
+          user
+          |> cast(params, [:name])
+          |> Upload.Ecto.cast_upload(:logo, with: MyCustomUploader)
+        end
+
     """
     @spec cast_upload(Ecto.Changeset.t, atom, list) :: Ecto.Changeset.t
     def cast_upload(changeset, field, opts \\ []) do
@@ -10,6 +35,9 @@ if Code.ensure_compiled? Ecto do
 
     @doc """
     Casts a path in the params under a given key, uploads it, and assigns it to the field.
+
+    This function accepts the same options that `Upload.Ecto.cast_upload/2` accepts.
+
     """
     @spec cast_upload_path(Ecto.Changeset.t, atom, list) :: Ecto.Changeset.t
     def cast_upload_path(changeset, field, opts \\ []) do
