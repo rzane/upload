@@ -1,5 +1,11 @@
 if Code.ensure_compiled? Ecto do
   defmodule Upload.Ecto do
+    import Ecto.Changeset, only: [
+      put_change: 3,
+      prepare_changes: 2,
+      add_error: 3
+    ]
+
     @doc """
     Casts an upload in the params under the given key, uploads it, and assigns it to the field.
 
@@ -80,24 +86,26 @@ if Code.ensure_compiled? Ecto do
     """
     @spec put_upload(Ecto.Changeset.t, atom, Upload.t, list) :: Ecto.Changeset.t
     def put_upload(changeset, field, upload, opts \\ [])
-    def put_upload(changeset, field, %Upload{status: :pending} = upload, opts) do
+    def put_upload(changeset, field, %Upload{status: :pending, key: key} = upload, opts) do
       uploader = Keyword.get(opts, :with, Upload)
 
-      Ecto.Changeset.prepare_changes changeset, fn changeset ->
+      changeset
+      |> put_change(field, key)
+      |> prepare_changes(fn changeset ->
         case uploader.transfer(upload) do
           {:ok, upload} ->
             put_upload(changeset, field, upload)
 
           {:error, message} when is_binary(message) ->
-            Ecto.Changeset.add_error(changeset, field, message)
+            add_error(changeset, field, message)
 
           {:error, _} ->
-            Ecto.Changeset.add_error(changeset, field, "failed to upload")
+            add_error(changeset, field, "failed to upload")
         end
-      end
+      end)
     end
     def put_upload(changeset, field, %Upload{status: :transferred, key: key}, _opts) do
-      Ecto.Changeset.put_change(changeset, field, key)
+      put_change(changeset, field, key)
     end
   end
 end

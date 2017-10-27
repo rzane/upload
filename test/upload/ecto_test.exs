@@ -58,16 +58,13 @@ defmodule Upload.EctoTest do
       assert Map.size(Adapter.get_uploads) == 1
     end
 
-    test "assigns the value after the file is transferred", %{upload: upload} do
+    test "assigns the key", %{upload: upload} do
       changeset = Company.change
       changeset = Upload.Ecto.put_upload(changeset, :logo, upload)
-
-      refute get_field(changeset, :logo)
-      changeset = run_prepared_changes(changeset)
       assert get_field(changeset, :logo)
     end
 
-    test "immediately assigns uploads that have already been transferred", %{upload: upload} do
+    test "assigns uploads that have already been transferred", %{upload: upload} do
       upload = %Upload{upload | status: :transferred}
       changeset = Company.change
       changeset = Upload.Ecto.put_upload(changeset, :logo, upload)
