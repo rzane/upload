@@ -10,8 +10,11 @@ config :upload, Upload.Adapters.S3,
 
 # Point ex_aws at local fakes3
 config :ex_aws,
-  access_key_id: ["foo", :instance_role],
-  secret_access_key: ["bar", :instance_role]
+  access_key_id: "foo",
+  secret_access_key: "bar"
+
+config :ex_aws, :retries,
+  max_attempts: 1
 
 config :ex_aws, :s3,
   scheme: "http://",
