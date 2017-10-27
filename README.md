@@ -1,6 +1,16 @@
+[![Build Status](https://travis-ci.org/rzane/upload.svg?branch=master)](https://travis-ci.org/rzane/upload)
+[![Coverage Status](https://coveralls.io/repos/github/rzane/upload/badge.svg)](https://coveralls.io/github/rzane/upload)
+
 # Upload
 
-Upload files and get URLs for them. Nothing more.
+An opinionated file uploader for Elixir projects.
+
+Upload offers the following features:
+
+* Minimal API
+* Sane defaults
+* Ecto integration
+* Multiple storage adapters
 
 ## Installation
 
