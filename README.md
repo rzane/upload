@@ -30,9 +30,13 @@ end
 Upload a file:
 
 ```elixir
-with {:ok, upload} <- Upload.cast_path("/path/to/file.txt"),
-     {:ok, upload} <- Upload.transfer(upload),
-     do: {:ok, Upload.get_url(upload.key)}
+{:ok, upload} = Upload.cast_path("/path/to/file.txt")
+
+# Transfer the upload to storage
+{:ok, upload} = Upload.transfer(upload)
+
+# Get the URL for the upload
+Upload.get_url(upload)
 ```
 
 ### Ecto Integration
@@ -58,8 +62,8 @@ end
 Cast the upload in your changeset:
 
 ```elixir
-def changeset(struct, attrs \\ %{}) do
-  struct
+def changeset(company, attrs \\ %{}) do
+  company
   |> cast(attrs, [])
   |> Upload.Ecto.cast_upload(:logo, prefix: ["logos"])
 end
