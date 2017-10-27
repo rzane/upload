@@ -11,7 +11,7 @@ if Code.ensure_compiled? Ecto do
     @doc """
     Casts a path in the params under a given key, uploads it, and assigns it to the field.
     """
-    @spec cast_upload(Ecto.Changeset.t, atom, list) :: Ecto.Changeset.t
+    @spec cast_upload_path(Ecto.Changeset.t, atom, list) :: Ecto.Changeset.t
     def cast_upload_path(changeset, field, opts \\ []) do
       do_cast(:cast_path, changeset, field, opts)
     end

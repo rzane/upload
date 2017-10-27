@@ -34,6 +34,10 @@ defmodule Upload.Adapters.Local do
     join_url(public_path(), key)
   end
 
+  defp join_url(a, b) do
+    String.trim_trailing(a, "/") <> "/" <> String.trim_leading(b, "/")
+  end
+
   @impl true
   def transfer(%Upload{key: key, path: path} = upload) do
     filename  = Path.join(storage_path(), key)

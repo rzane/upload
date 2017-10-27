@@ -30,7 +30,9 @@ if Code.ensure_compiled? ExAws do
 
     @impl true
     def get_url(key) do
-      join_url(uri(), key)
+      uri()
+      |> URI.merge(key)
+      |> URI.to_string()
     end
 
     @impl true
