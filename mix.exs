@@ -4,6 +4,7 @@ defmodule Upload.Mixfile do
   def project do
     [
       app: :upload,
+      package: package(),
       version: "0.1.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
@@ -20,6 +21,16 @@ defmodule Upload.Mixfile do
         "coveralls.post": :test,
         "coveralls.html": :test
       ]
+    ]
+  end
+
+  defp package do
+    [
+      description: "An opinionated file uploader",
+      files: ["lib", "config", "mix.exs", "README.md", "LICENSE.txt"],
+      maintainers: ["Ray Zane"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/rzane/upload"}
     ]
   end
 
@@ -47,6 +58,7 @@ defmodule Upload.Mixfile do
 
       {:exvcr, "~> 0.8", only: :test},
       {:excoveralls, "~> 0.7", only: :test},
+      {:ex_doc, "~> 0.16", only: :dev, runtime: false},
       {:mix_test_watch, "~> 0.3", only: :dev, runtime: false},
       {:dialyxir, "~> 0.5", only: :dev, runtime: false}
     ]
