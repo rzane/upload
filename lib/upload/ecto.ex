@@ -3,6 +3,7 @@ if Code.ensure_compiled? Ecto do
     @doc """
     Casts an upload in the params under the given key, uploads it, and assigns it to the field.
     """
+    @spec cast_upload(Ecto.Changeset.t, atom, list) :: Ecto.Changeset.t
     def cast_upload(changeset, field, opts \\ []) do
       do_cast(:cast, changeset, field, opts)
     end
@@ -10,6 +11,7 @@ if Code.ensure_compiled? Ecto do
     @doc """
     Casts a path in the params under a given key, uploads it, and assigns it to the field.
     """
+    @spec cast_upload(Ecto.Changeset.t, atom, list) :: Ecto.Changeset.t
     def cast_upload_path(changeset, field, opts \\ []) do
       do_cast(:cast_path, changeset, field, opts)
     end
@@ -33,7 +35,7 @@ if Code.ensure_compiled? Ecto do
           Expected #{inspect uploader}.#{action} to return one of the following:
 
             {:ok, %Upload{}}          - Casting was successful
-            {:error, :not_uploadable} - Unable to cast value, don't upload it.
+            {:error, :not_uploadable} - Unable to cast value, don't upload it
             {:error, "error message"} - Validation error
 
           Instead, it returned:
@@ -48,6 +50,7 @@ if Code.ensure_compiled? Ecto do
 
     If the file hasn't been uploaded yet, it will be.
     """
+    @spec put_upload(Ecto.Changeset.t, atom, Upload.t, list) :: Ecto.Changeset.t
     def put_upload(changeset, field, upload, opts \\ [])
     def put_upload(changeset, field, %Upload{status: :pending} = upload, opts) do
       uploader = Keyword.get(opts, :with, Upload)

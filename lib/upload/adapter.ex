@@ -29,6 +29,7 @@ defmodule Upload.Adapter do
   @doc """
   Get a configuration variable and fallback to the default.
   """
+  @spec get_config(list, atom, any) :: any
   def get_config(config, key, default) do
     if Keyword.has_key?(config, key) do
       fetch_config!(config, key)
@@ -40,6 +41,7 @@ defmodule Upload.Adapter do
   @doc """
   Get a configuration variable, or raise an error.
   """
+  @spec get_config(list, atom) :: any
   def fetch_config!(config, key) do
     with {:system, varname} <- Keyword.fetch!(config, key) do
       System.get_env(varname)
