@@ -6,5 +6,5 @@ defmodule Upload.Adapter do
   end
 
   @callback get_url(String.t) :: String.t
-  @callback transfer(Upload.t) :: {:ok, Upload.transferred} | {:error, any}
+  @callback transfer(Upload.t) :: {:ok, Upload.transferred} | {:error, String.t}
 end

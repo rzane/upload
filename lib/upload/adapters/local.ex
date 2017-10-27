@@ -45,7 +45,12 @@ defmodule Upload.Adapters.Local do
     directory = Path.dirname(filename)
 
     with :ok <- File.mkdir_p(directory),
-         :ok <- File.cp(path, filename),
-         do: {:ok, %Upload{upload | status: :transferred}}
+         :ok <- File.cp(path, filename)
+    do
+      {:ok, %Upload{upload | status: :transferred}}
+    else
+      _ ->
+        {:error, "failed to transfer file"}
+    end
   end
 end

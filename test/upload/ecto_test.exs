@@ -78,11 +78,12 @@ defmodule Upload.EctoTest do
       assert changeset.errors == [logo: {"PANIC!!!", []}]
     end
 
-    test "falls back to an ambiguous error message", %{upload: upload} do
-      changeset = Company.change
-      changeset = Upload.Ecto.put_upload(changeset, :logo, upload, with: BrokenUploader)
-      changeset = run_prepared_changes(changeset)
-      assert changeset.errors == [logo: {"failed to upload", []}]
+    test "raises when it receives an invalid signature", %{upload: upload} do
+      assert_raise RuntimeError, fn ->
+        Company.change
+        |> Upload.Ecto.put_upload(:logo, upload, with: BrokenUploader)
+        |> run_prepared_changes()
+      end
     end
   end
 

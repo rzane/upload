@@ -9,8 +9,11 @@ defmodule Upload.Mixfile do
       start_permanent: Mix.env == :prod,
       deps: deps(),
       aliases: aliases(),
-      dialyzer: [plt_add_apps: [:ecto, :ex_aws]],
       test_coverage: [tool: ExCoveralls],
+      dialyzer: [
+        plt_add_apps: [:ecto, :ex_aws],
+        flags: ["-Wunmatched_returns", :error_handling, :race_conditions]
+      ],
       preferred_cli_env: [
         "coveralls": :test,
         "coveralls.detail": :test,

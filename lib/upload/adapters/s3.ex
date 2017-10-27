@@ -39,8 +39,13 @@ if Code.ensure_compiled? ExAws do
     @impl true
     def transfer(%Upload{key: key, path: path} = upload) do
       with {:ok, data} <- File.read(path),
-           {:ok, _}    <- put_object(key, data),
-           do: {:ok, %Upload{upload | status: :transferred}}
+           {:ok, _}    <- put_object(key, data)
+      do
+        {:ok, %Upload{upload | status: :transferred}}
+      else
+        _ ->
+          {:error, "failed to transfer file"}
+      end
     end
 
     defp put_object(key, data) do

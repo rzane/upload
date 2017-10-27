@@ -66,7 +66,7 @@ if Code.ensure_compiled? Ecto do
 
         other ->
           raise """
-          Expected #{inspect uploader}.#{action} to return one of the following:
+          Expected #{inspect uploader}.#{action}/2 to return one of the following:
 
             {:ok, %Upload{}}          - Casting was successful
             :error                    - Unable to cast value, ignore it
@@ -99,8 +99,17 @@ if Code.ensure_compiled? Ecto do
           {:error, message} when is_binary(message) ->
             add_error(changeset, field, message)
 
-          {:error, _} ->
-            add_error(changeset, field, "failed to upload")
+          other ->
+            raise """
+            Expected #{inspect uploader}.transfer/1 to return one of the following:
+
+              {:ok, %Upload{}}
+              {:error, "error message"}
+
+            Instead, it returned:
+
+              #{inspect other}
+            """
         end
       end)
     end

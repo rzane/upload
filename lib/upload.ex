@@ -52,7 +52,7 @@ defmodule Upload do
   @doc """
   Transfer the file to where it will be stored.
   """
-  @spec transfer(Upload.t) :: {:ok, Upload.transferred} | {:error, any}
+  @spec transfer(Upload.t) :: {:ok, Upload.transferred} | {:error, String.t}
   def transfer(%__MODULE__{} = upload), do: @adapter.transfer(upload)
 
   @doc """

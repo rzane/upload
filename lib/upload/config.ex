@@ -35,7 +35,7 @@ defmodule Upload.Config do
       ** (KeyError) key :foo not found in: []
 
   """
-  @spec fetch!(list, atom) :: any
+  @spec fetch!(list, atom) :: any | no_return
   def fetch!(config, key) do
     with {:system, varname} <- Keyword.fetch!(config, key) do
       System.get_env(varname)
