@@ -14,8 +14,7 @@ Upload offers the following features:
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `upload` to your list of dependencies in `mix.exs`:
+The package can be installed by adding `upload` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
