@@ -2,9 +2,6 @@ defmodule Upload.Adapter do
   defmacro __using__(_) do
     quote do
       @behaviour Upload.Adapter
-
-      import Upload.Adapter
-      import Upload.Config
     end
   end
 

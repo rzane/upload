@@ -1,5 +1,6 @@
 defmodule Upload.Adapters.Local do
   use Upload.Adapter
+  alias Upload.Config
 
   @config Application.get_env(:upload, __MODULE__, [])
 
@@ -13,7 +14,7 @@ defmodule Upload.Adapters.Local do
 
   """
   def storage_path do
-    get_config(@config, :storage_path, "priv/static/uploads")
+    Config.get(@config, :storage_path, "priv/static/uploads")
   end
 
   @doc """
@@ -26,7 +27,7 @@ defmodule Upload.Adapters.Local do
 
   """
   def public_path do
-    get_config(@config, :public_path, "/uploads")
+    Config.get(@config, :public_path, "/uploads")
   end
 
   @impl true
