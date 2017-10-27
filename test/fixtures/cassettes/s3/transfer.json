@@ -1,0 +1,71 @@
+[
+  {
+    "request": {
+      "body": "MEATLOAF\n",
+      "headers": {
+        "Authorization": "AWS4-HMAC-SHA256 Credential=foo/20171027/us-east-1/s3/aws4_request,SignedHeaders=content-length;host;x-amz-content-sha256;x-amz-date,Signature=d837894f0e8417a6d0b28f1921bfa20f6d9d7e5c6a8ab476d94fe7488e019d34",
+        "host": "localhost:4569",
+        "x-amz-date": "20171027T151032Z",
+        "content-length": "9",
+        "x-amz-content-sha256": "3aac5bdc47ff18016c7ed6e4253ede8e8f6cd8ee2b023496714dff1bec5eea72"
+      },
+      "method": "put",
+      "options": {
+        "with_body": "true",
+        "recv_timeout": 30000
+      },
+      "request_body": "",
+      "url": "http://localhost:4569/my_bucket_name/foo/text.txt"
+    },
+    "response": {
+      "body": "",
+      "headers": {
+        "Content-Type": "text/xml",
+        "Access-Control-Allow-Origin": "*",
+        "ETag": "\"416186c16238c416482d6cce7a4b21d6\"",
+        "Server": "WEBrick/1.3.1 (Ruby/2.1.5/2014-11-13) OpenSSL/1.0.1t",
+        "Date": "Fri, 27 Oct 2017 15:10:50 GMT",
+        "Content-Length": "0",
+        "Connection": "Keep-Alive"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  },
+  {
+    "request": {
+      "body": "",
+      "headers": {
+        "Authorization": "AWS4-HMAC-SHA256 Credential=foo/20171027/us-east-1/s3/aws4_request,SignedHeaders=content-length;host;x-amz-content-sha256;x-amz-date,Signature=eaec1d1c02e86542dcd1a1092f7e9f550837b278a14a8f37e94089b501b0f096",
+        "host": "localhost:4569",
+        "x-amz-date": "20171027T151032Z",
+        "content-length": "0",
+        "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "method": "get",
+      "options": {
+        "with_body": "true",
+        "recv_timeout": 30000
+      },
+      "request_body": "",
+      "url": "http://localhost:4569/my_bucket_name/foo/text.txt"
+    },
+    "response": {
+      "body": "MEATLOAF\n",
+      "headers": {
+        "Content-Type": "application/octet-stream",
+        "Last-Modified": "Fri, 27 Oct 2017 15:10:50 GMT",
+        "ETag": "\"416186c16238c416482d6cce7a4b21d6\"",
+        "Accept-Ranges": "bytes",
+        "Last-Ranges": "bytes",
+        "Access-Control-Allow-Origin": "*",
+        "Content-Length": "9",
+        "Server": "WEBrick/1.3.1 (Ruby/2.1.5/2014-11-13) OpenSSL/1.0.1t",
+        "Date": "Fri, 27 Oct 2017 15:10:50 GMT",
+        "Connection": "Keep-Alive"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  }
+]

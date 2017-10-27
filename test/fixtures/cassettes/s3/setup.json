@@ -1,0 +1,33 @@
+[
+  {
+    "request": {
+      "body": "",
+      "headers": {
+        "Authorization": "AWS4-HMAC-SHA256 Credential=foo/20171027/us-east-1/s3/aws4_request,SignedHeaders=content-length;host;x-amz-content-sha256;x-amz-date,Signature=3e5a83178101616e034ce111207d919ca2a27bb76fd3b0acfba60f883765b2da",
+        "host": "localhost:4569",
+        "x-amz-date": "20171027T151032Z",
+        "content-length": "0",
+        "x-amz-content-sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "method": "head",
+      "options": {
+        "with_body": "true",
+        "recv_timeout": 30000
+      },
+      "request_body": "",
+      "url": "http://localhost:4569/my_bucket_name/"
+    },
+    "response": {
+      "body": null,
+      "headers": {
+        "Content-Type": "application/xml",
+        "Server": "WEBrick/1.3.1 (Ruby/2.1.5/2014-11-13) OpenSSL/1.0.1t",
+        "Date": "Fri, 27 Oct 2017 15:10:50 GMT",
+        "Content-Length": "784",
+        "Connection": "Keep-Alive"
+      },
+      "status_code": 200,
+      "type": "ok"
+    }
+  }
+]

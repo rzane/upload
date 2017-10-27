@@ -27,14 +27,15 @@ defmodule Upload.Mixfile do
       {:plug, ">= 0.0.0"},
 
       # S3 Adapter
+      {:httpoison, "~> 0.11", optional: true},
       {:ex_aws, "~> 1.1", optional: true},
-      {:hackney, "1.6.3 or 1.6.5 or 1.7.1 or 1.8.6 or ~> 1.9", optional: true},
-      {:poison, ">= 1.2.0", optional: true},
+      {:poison, "~> 2.2 or ~> 3.1", optional: true},
       {:sweet_xml, "~> 0.6", optional: true},
 
       # Ecto integration
       {:ecto, ">= 0.0.0", optional: true},
 
+      {:exvcr, "~> 0.8", only: :test},
       {:mix_test_watch, "~> 0.3", only: :dev, runtime: false},
       {:dialyxir, "~> 0.5", only: :dev, runtime: false}
     ]
