@@ -30,8 +30,8 @@ defmodule Upload.Adapters.S3Test do
   end
 
   test "get_url/1" do
-    assert Adapter.get_url("foo.txt") == "http://my_bucket_name.s3.amazonaws.com/foo.txt"
-    assert Adapter.get_url("foo/bar.txt") == "http://my_bucket_name.s3.amazonaws.com/foo/bar.txt"
+    assert Adapter.get_url("foo.txt") == "https://my_bucket_name.s3.amazonaws.com/foo.txt"
+    assert Adapter.get_url("foo/bar.txt") == "https://my_bucket_name.s3.amazonaws.com/foo/bar.txt"
   end
 
   test "transfer/1" do

@@ -9,7 +9,14 @@ defmodule Upload.Mixfile do
       start_permanent: Mix.env == :prod,
       deps: deps(),
       aliases: aliases(),
-      dialyzer: [plt_add_apps: [:ecto, :ex_aws]]
+      dialyzer: [plt_add_apps: [:ecto, :ex_aws]],
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        "coveralls": :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ]
     ]
   end
 
@@ -36,6 +43,7 @@ defmodule Upload.Mixfile do
       {:ecto, ">= 0.0.0", optional: true},
 
       {:exvcr, "~> 0.8", only: :test},
+      {:excoveralls, "~> 0.7", only: :test},
       {:mix_test_watch, "~> 0.3", only: :dev, runtime: false},
       {:dialyxir, "~> 0.5", only: :dev, runtime: false}
     ]

@@ -24,7 +24,7 @@ if Code.ensure_compiled? Ecto do
         {:ok, upload} ->
           put_upload(changeset, field, upload, opts)
 
-        {:error, :not_uploadable} ->
+        :error ->
           changeset
 
         {:error, message} when is_binary(message) ->
@@ -35,7 +35,7 @@ if Code.ensure_compiled? Ecto do
           Expected #{inspect uploader}.#{action} to return one of the following:
 
             {:ok, %Upload{}}          - Casting was successful
-            {:error, :not_uploadable} - Unable to cast value, don't upload it
+            :error                    - Unable to cast value, ignore it
             {:error, "error message"} - Validation error
 
           Instead, it returned:

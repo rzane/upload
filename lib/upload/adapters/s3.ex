@@ -22,11 +22,11 @@ if Code.ensure_compiled? ExAws do
     ## Examples
 
         iex> Upload.Adapters.S3.uri
-        "http://my_bucket_name.s3.amazonaws.com"
+        "https://my_bucket_name.s3.amazonaws.com"
 
     """
     def uri do
-      Config.get(@config, :uri, "http://#{bucket()}.s3.amazonaws.com")
+      Config.get(@config, :uri, "https://#{bucket()}.s3.amazonaws.com")
     end
 
     @impl true

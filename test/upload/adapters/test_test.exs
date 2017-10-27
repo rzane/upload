@@ -13,6 +13,10 @@ defmodule Upload.Adapters.TestTest do
     :ok
   end
 
+  test "stop/2" do
+    assert :ok = Upload.Adapters.Test.stop()
+  end
+
   test "get_uploads/1 and put_upload/1" do
     assert Adapter.get_uploads == %{}
     Adapter.put_upload(@upload)

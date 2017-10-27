@@ -1,6 +1,13 @@
 defmodule UploadTest do
   use ExUnit.Case
-  doctest Upload, except: [generate_key: 2]
+
+  doctest Upload, except: [
+    get_url: 1,
+    transfer: 1,
+    generate_key: 2,
+    cast: 2,
+    cast_path: 2
+  ]
 
   @fixture Path.expand("./fixtures/text.txt", __DIR__)
   @plug %Plug.Upload{path: @fixture, filename: "text.txt"}
@@ -26,11 +33,21 @@ defmodule UploadTest do
     assert {:ok, ^upload} = Upload.cast(upload)
   end
 
-  test "cast_path/1" do
+  test "cast/1 with something else" do
+    assert Upload.cast(100) == :error
+    assert Upload.cast(nil) == :error
+  end
+
+  test "cast_path/1 with a path" do
     assert {:ok, upload} = Upload.cast_path(@fixture)
     assert upload.path == @plug.path
     assert upload.filename == @plug.filename
     assert upload.key =~ ~r"^[a-z0-9]{32}\.txt$"
     assert upload.status == :pending
+  end
+
+  test "cast_path/1 with something else" do
+    assert :error = Upload.cast_path(100)
+    assert :error = Upload.cast_path(nil)
   end
 end

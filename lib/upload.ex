@@ -25,33 +25,73 @@ defmodule Upload do
   @type uploadable :: Plug.Upload.t | Upload.t
   @type uploadable_path :: String.t | Upload.t
 
-  @spec get_url(String.t) :: String.t
-  defdelegate get_url(key), to: @adapter
+  @doc """
+  Get the URL for a given key. It will behave differently based
+  on the adapter you're using.
 
-  @spec transfer(Upload.t) :: {:ok, Upload.transferred} | {:error, any}
-  defdelegate transfer(upload), to: @adapter
+  ### Local
+
+      iex> Upload.get_url("123456.png")
+      "/uploads/123456.png"
+
+  ### S3
+
+      iex> Upload.get_url("123456.png")
+      "https://my_bucket_name.s3.amazonaws.com/123456.png"
+
+  ### Fake / Test
+
+      iex> Upload.get_url("123456.png")
+      "123456.png"
+
+  """
+  @spec get_url(Upload.t | String.t) :: String.t
+  def get_url(%__MODULE__{key: key}), do: get_url(key)
+  def get_url(key) when is_binary(key), do: @adapter.get_url(key)
 
   @doc """
-  Normalizes an uploadable dataum into something we can transfer.
+  Transfer the file to where it will be stored.
   """
-  @spec cast(uploadable, list) ::
-    {:ok, Upload.t} | {:error, String.t | :not_uploadable}
+  @spec transfer(Upload.t) :: {:ok, Upload.transferred} | {:error, any}
+  def transfer(%__MODULE__{} = upload), do: @adapter.transfer(upload)
+
+  @doc """
+  Converts a `Plug.Upload` to an `Upload`.
+
+  ## Examples
+
+      iex> Upload.cast(%Plug.Upload{path: "/path/to/foo.png", filename: "foo.png"})
+      {:ok, %Upload{path: "/path/to/foo.png", filename: "foo.png", key: "123456.png"}}
+
+      iex> Upload.cast(100)
+      :error
+
+  """
+  @spec cast(uploadable, list) :: {:ok, Upload.t} | :error
   def cast(uploadable, opts \\ [])
   def cast(%Upload{} = upload, _opts), do: {:ok, upload}
   def cast(%Plug.Upload{filename: filename, path: path}, opts) do
     do_cast(filename, path, opts)
   end
   def cast(_not_uploadable, _opts) do
-    {:error, :not_uploadable}
+    :error
   end
 
   @doc """
-  Cast a file path to an `%Upload{}`.
+  Cast a file path to an `Upload`.
 
   *Warning:* Do not use `cast_path` with unsanitized user input.
+
+  ## Examples
+
+      iex> Upload.cast_path("/path/to/foo.png")
+      {:ok, %Upload{path: "/path/to/foo.png", filename: "foo.png", key: "123456.png"}}
+
+      iex> Upload.cast_path(100)
+      :error
+
   """
-  @spec cast_path(uploadable_path, list) ::
-    {:ok, Upload.t} | {:error, String.t | :not_uploadable}
+  @spec cast_path(uploadable_path, list) :: {:ok, Upload.t} | :error
   def cast_path(path, opts \\ [])
   def cast_path(%Upload{} = upload, _opts), do: {:ok, upload}
   def cast_path(path, opts) when is_binary(path) do
@@ -60,7 +100,7 @@ defmodule Upload do
     |> do_cast(path, opts)
   end
   def cast_path(_, _opts) do
-    {:error, :not_uploadable}
+    :error
   end
 
   defp do_cast(filename, path, opts) do

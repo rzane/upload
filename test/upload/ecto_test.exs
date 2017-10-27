@@ -26,6 +26,12 @@ defmodule Upload.EctoTest do
     def transfer(_value), do: {:error, "PANIC!!!"}
   end
 
+  defmodule BrokenUploader do
+    def cast(_value, _opts), do: {:error, %{foo: "bar"}}
+    def cast_path(_value, _opts), do: {:error, %{foo: "bar"}}
+    def transfer(_value), do: {:error, %{foo: "bar"}}
+  end
+
   setup do
     assert {:ok, _} = start_supervised(Adapter)
     assert {:ok, upload} = Upload.cast_path(@fixture)
@@ -74,6 +80,13 @@ defmodule Upload.EctoTest do
       changeset = run_prepared_changes(changeset)
       assert changeset.errors == [logo: {"PANIC!!!", []}]
     end
+
+    test "falls back to an ambiguous error message", %{upload: upload} do
+      changeset = Company.change
+      changeset = Upload.Ecto.put_upload(changeset, :logo, upload, with: BrokenUploader)
+      changeset = run_prepared_changes(changeset)
+      assert changeset.errors == [logo: {"failed to upload", []}]
+    end
   end
 
   describe "cast_upload/3" do
@@ -109,6 +122,12 @@ defmodule Upload.EctoTest do
       changeset = cast_and_upload("meatloaf", with: CustomUploader)
       assert changeset.errors == [logo: {"cast: meatloaf", []}]
     end
+
+    test "raises when it receives an invalid signature" do
+      assert_raise RuntimeError, fn ->
+        cast_and_upload("meatloaf", with: BrokenUploader)
+      end
+    end
   end
 
   describe "cast_upload_path/3" do
@@ -143,6 +162,12 @@ defmodule Upload.EctoTest do
     test "accepts custom uploader and handles errors" do
       changeset = cast_and_upload_path("meatloaf", with: CustomUploader)
       assert changeset.errors == [logo: {"cast path: meatloaf", []}]
+    end
+
+    test "raises when it receives an invalid signature" do
+      assert_raise RuntimeError, fn ->
+        cast_and_upload_path("meatloaf", with: BrokenUploader)
+      end
     end
   end
 
