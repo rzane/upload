@@ -3,8 +3,6 @@ if Code.ensure_compiled? ExAws do
     use Upload.Adapter
     alias Upload.Config
 
-    @config Application.get_env(:upload, __MODULE__, [])
-
     @doc """
     The bucket that was configured.
 
@@ -14,7 +12,7 @@ if Code.ensure_compiled? ExAws do
         "my_bucket_name"
 
     """
-    def bucket, do: Config.fetch!(@config, :bucket)
+    def bucket, do: Config.fetch!(__MODULE__, :bucket)
 
     @doc """
     The base URL that all resources are hosted on.
@@ -26,7 +24,7 @@ if Code.ensure_compiled? ExAws do
 
     """
     def uri do
-      Config.get(@config, :uri, "https://#{bucket()}.s3.amazonaws.com")
+      Config.get(__MODULE__, :uri, "https://#{bucket()}.s3.amazonaws.com")
     end
 
     @impl true

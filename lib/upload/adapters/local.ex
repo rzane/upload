@@ -2,8 +2,6 @@ defmodule Upload.Adapters.Local do
   use Upload.Adapter
   alias Upload.Config
 
-  @config Application.get_env(:upload, __MODULE__, [])
-
   @doc """
   Path where files are stored. Defaults to `priv/static/uploads`.
 
@@ -14,7 +12,7 @@ defmodule Upload.Adapters.Local do
 
   """
   def storage_path do
-    Config.get(@config, :storage_path, "priv/static/uploads")
+    Config.get(__MODULE__, :storage_path, "priv/static/uploads")
   end
 
   @doc """
@@ -27,7 +25,7 @@ defmodule Upload.Adapters.Local do
 
   """
   def public_path do
-    Config.get(@config, :public_path, "/uploads")
+    Config.get(__MODULE__, :public_path, "/uploads")
   end
 
   @impl true

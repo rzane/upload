@@ -6,9 +6,6 @@ defmodule Upload do
   @enforce_keys [:key, :path, :filename]
   defstruct [:key, :path, :filename, status: :pending]
 
-  @config Application.get_env(:upload, __MODULE__, [adapter: Upload.Adapters.Local])
-  @adapter Keyword.get(@config, :adapter)
-
   @type t :: %Upload{
     key: String.t,
     filename: String.t,
@@ -24,6 +21,13 @@ defmodule Upload do
 
   @type uploadable :: Plug.Upload.t | Upload.t
   @type uploadable_path :: String.t | Upload.t
+
+  @doc """
+  Get the adapter from config.
+  """
+  def adapter do
+    Upload.Config.get(__MODULE__, :adapter, Upload.Adapters.Local)
+  end
 
   @doc """
   Get the URL for a given key. It will behave differently based
@@ -47,13 +51,13 @@ defmodule Upload do
   """
   @spec get_url(Upload.t | String.t) :: String.t
   def get_url(%__MODULE__{key: key}), do: get_url(key)
-  def get_url(key) when is_binary(key), do: @adapter.get_url(key)
+  def get_url(key) when is_binary(key), do: adapter().get_url(key)
 
   @doc """
   Transfer the file to where it will be stored.
   """
   @spec transfer(Upload.t) :: {:ok, Upload.transferred} | {:error, String.t}
-  def transfer(%__MODULE__{} = upload), do: @adapter.transfer(upload)
+  def transfer(%__MODULE__{} = upload), do: adapter().transfer(upload)
 
   @doc """
   Converts a `Plug.Upload` to an `Upload`.
