@@ -44,7 +44,13 @@ defmodule Upload.Uploader do
     end
   end
 
+  @callback cast(Upload.uploadable) ::
+    {:ok, Upload.t} | {:error, String.t} | :error
+
   @callback cast(Upload.uploadable, list) ::
+    {:ok, Upload.t} | {:error, String.t} | :error
+
+  @callback cast_path(Upload.uploadable_path) ::
     {:ok, Upload.t} | {:error, String.t} | :error
 
   @callback cast_path(Upload.uploadable_path, list) ::
