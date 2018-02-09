@@ -9,13 +9,13 @@ defmodule Upload.Adapters.S3Test do
   @upload %Upload{path: @fixture, filename: "text.txt", key: "foo/text.txt"}
 
   defp ensure_bucket_exists! do
-    with {:error, _ } <- Adapter.bucket |> ExAws.S3.head_bucket |> ExAws.request do
-      Adapter.bucket |> ExAws.S3.put_bucket("us-east-1") |> ExAws.request!
+    with {:error, _} <- Adapter.bucket() |> ExAws.S3.head_bucket() |> ExAws.request() do
+      Adapter.bucket() |> ExAws.S3.put_bucket("us-east-1") |> ExAws.request!()
     end
   end
 
   defp get_object(key) do
-    Adapter.bucket |> ExAws.S3.get_object(key) |> ExAws.request
+    Adapter.bucket() |> ExAws.S3.get_object(key) |> ExAws.request()
   end
 
   setup_all do

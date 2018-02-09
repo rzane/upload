@@ -7,7 +7,7 @@ defmodule Upload.Mixfile do
       package: package(),
       version: "0.1.2",
       elixir: "~> 1.5",
-      start_permanent: Mix.env == :prod,
+      start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
       test_coverage: [tool: ExCoveralls],
@@ -16,7 +16,7 @@ defmodule Upload.Mixfile do
         flags: ["-Wunmatched_returns", :error_handling, :race_conditions]
       ],
       preferred_cli_env: [
-        "coveralls": :test,
+        coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
@@ -64,11 +64,11 @@ defmodule Upload.Mixfile do
 
   defp aliases do
     [
-      "fakes3": &fakes3/1
+      fakes3: &fakes3/1
     ]
   end
 
   defp fakes3(_) do
-    Mix.shell.cmd("docker run --rm -p 4569:4569 lphoward/fake-s3")
+    Mix.shell().cmd("docker run --rm -p 4569:4569 lphoward/fake-s3")
   end
 end

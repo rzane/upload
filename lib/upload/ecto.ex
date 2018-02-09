@@ -1,10 +1,11 @@
-if Code.ensure_compiled? Ecto do
+if Code.ensure_compiled?(Ecto) do
   defmodule Upload.Ecto do
-    import Ecto.Changeset, only: [
-      put_change: 3,
-      prepare_changes: 2,
-      add_error: 3
-    ]
+    import Ecto.Changeset,
+      only: [
+        put_change: 3,
+        prepare_changes: 2,
+        add_error: 3
+      ]
 
     @doc """
     Casts an upload in the params under the given key, uploads it, and assigns it to the field.
@@ -34,7 +35,7 @@ if Code.ensure_compiled? Ecto do
         end
 
     """
-    @spec cast_upload(Ecto.Changeset.t, atom, list) :: Ecto.Changeset.t
+    @spec cast_upload(Ecto.Changeset.t(), atom, list) :: Ecto.Changeset.t()
     def cast_upload(changeset, field, opts \\ []) do
       do_cast(:cast, changeset, field, opts)
     end
@@ -45,7 +46,7 @@ if Code.ensure_compiled? Ecto do
     This function accepts the same options that `Upload.Ecto.cast_upload/2` accepts.
 
     """
-    @spec cast_upload_path(Ecto.Changeset.t, atom, list) :: Ecto.Changeset.t
+    @spec cast_upload_path(Ecto.Changeset.t(), atom, list) :: Ecto.Changeset.t()
     def cast_upload_path(changeset, field, opts \\ []) do
       do_cast(:cast_path, changeset, field, opts)
     end
@@ -66,7 +67,7 @@ if Code.ensure_compiled? Ecto do
 
         other ->
           raise """
-          Expected #{inspect uploader}.#{action}/2 to return one of the following:
+          Expected #{inspect(uploader)}.#{action}/2 to return one of the following:
 
             {:ok, %Upload{}}          - Casting was successful
             :error                    - Unable to cast value, ignore it
@@ -74,7 +75,7 @@ if Code.ensure_compiled? Ecto do
 
           Instead, it returned:
 
-            #{inspect other}
+            #{inspect(other)}
           """
       end
     end
@@ -84,8 +85,9 @@ if Code.ensure_compiled? Ecto do
 
     If the file hasn't been uploaded yet, it will be.
     """
-    @spec put_upload(Ecto.Changeset.t, atom, Upload.t, list) :: Ecto.Changeset.t
+    @spec put_upload(Ecto.Changeset.t(), atom, Upload.t(), list) :: Ecto.Changeset.t()
     def put_upload(changeset, field, upload, opts \\ [])
+
     def put_upload(changeset, field, %Upload{status: :pending, key: key} = upload, opts) do
       uploader = Keyword.get(opts, :with, Upload)
 
@@ -101,18 +103,19 @@ if Code.ensure_compiled? Ecto do
 
           other ->
             raise """
-            Expected #{inspect uploader}.transfer/1 to return one of the following:
+            Expected #{inspect(uploader)}.transfer/1 to return one of the following:
 
               {:ok, %Upload{}}
               {:error, "error message"}
 
             Instead, it returned:
 
-              #{inspect other}
+              #{inspect(other)}
             """
         end
       end)
     end
+
     def put_upload(changeset, field, %Upload{status: :transferred, key: key}, _opts) do
       put_change(changeset, field, key)
     end

@@ -1,4 +1,4 @@
-if Code.ensure_compiled? ExAws do
+if Code.ensure_compiled?(ExAws) do
   defmodule Upload.Adapters.S3 do
     use Upload.Adapter
     alias Upload.Config
@@ -37,8 +37,7 @@ if Code.ensure_compiled? ExAws do
     @impl true
     def transfer(%Upload{key: key, path: path} = upload) do
       with {:ok, data} <- File.read(path),
-           {:ok, _}    <- put_object(key, data)
-      do
+           {:ok, _} <- put_object(key, data) do
         {:ok, %Upload{upload | status: :transferred}}
       else
         _ ->
@@ -49,7 +48,7 @@ if Code.ensure_compiled? ExAws do
     defp put_object(key, data) do
       bucket()
       |> ExAws.S3.put_object(key, data)
-      |> ExAws.request
+      |> ExAws.request()
     end
   end
 end

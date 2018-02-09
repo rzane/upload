@@ -9,7 +9,7 @@ defmodule Upload.Adapters.LocalTest do
   @upload %Upload{path: @fixture, filename: "text.txt", key: "foo/text.txt"}
 
   setup do
-    {:ok, _} = File.rm_rf(Adapter.storage_path)
+    {:ok, _} = File.rm_rf(Adapter.storage_path())
     :ok
   end
 
@@ -18,9 +18,8 @@ defmodule Upload.Adapters.LocalTest do
     assert Adapter.get_url("foo/bar.txt") == "/uploads/foo/bar.txt"
   end
 
-
   test "transfer/1" do
     assert {:ok, %Upload{key: key, status: :transferred}} = Adapter.transfer(@upload)
-    assert File.exists?(Path.join(Adapter.storage_path, key))
+    assert File.exists?(Path.join(Adapter.storage_path(), key))
   end
 end

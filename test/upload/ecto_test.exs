@@ -12,7 +12,7 @@ defmodule Upload.EctoTest do
 
   defmodule Company do
     use Ecto.Schema
-    schema "companies", do: field :logo, :string
+    schema("companies", do: field(:logo, :string))
 
     def change(params \\ %{}) do
       %__MODULE__{}
@@ -50,29 +50,29 @@ defmodule Upload.EctoTest do
 
   describe "put_upload/4" do
     test "transfers the file after changes are prepared", %{upload: upload} do
-      changeset = Company.change
+      changeset = Company.change()
       changeset = Upload.Ecto.put_upload(changeset, :logo, upload)
 
-      assert Map.size(Adapter.get_uploads) == 0
+      assert Map.size(Adapter.get_uploads()) == 0
       run_prepared_changes(changeset)
-      assert Map.size(Adapter.get_uploads) == 1
+      assert Map.size(Adapter.get_uploads()) == 1
     end
 
     test "assigns the key", %{upload: upload} do
-      changeset = Company.change
+      changeset = Company.change()
       changeset = Upload.Ecto.put_upload(changeset, :logo, upload)
       assert get_field(changeset, :logo)
     end
 
     test "assigns uploads that have already been transferred", %{upload: upload} do
       upload = %Upload{upload | status: :transferred}
-      changeset = Company.change
+      changeset = Company.change()
       changeset = Upload.Ecto.put_upload(changeset, :logo, upload)
       assert get_field(changeset, :logo)
     end
 
     test "accepts custom uploader and handles errors", %{upload: upload} do
-      changeset = Company.change
+      changeset = Company.change()
       changeset = Upload.Ecto.put_upload(changeset, :logo, upload, with: CustomUploader)
       changeset = run_prepared_changes(changeset)
       assert changeset.errors == [logo: {"PANIC!!!", []}]
@@ -80,7 +80,7 @@ defmodule Upload.EctoTest do
 
     test "raises when it receives an invalid signature", %{upload: upload} do
       assert_raise RuntimeError, fn ->
-        Company.change
+        Company.change()
         |> Upload.Ecto.put_upload(:logo, upload, with: BrokenUploader)
         |> run_prepared_changes()
       end
@@ -90,7 +90,7 @@ defmodule Upload.EctoTest do
   describe "cast_upload/3" do
     def cast_and_upload(logo, opts \\ []) do
       %{"logo" => logo}
-      |> Company.change
+      |> Company.change()
       |> Upload.Ecto.cast_upload(:logo, opts)
       |> run_prepared_changes()
     end
@@ -131,7 +131,7 @@ defmodule Upload.EctoTest do
   describe "cast_upload_path/3" do
     defp cast_and_upload_path(logo, opts \\ []) do
       %{"logo" => logo}
-      |> Company.change
+      |> Company.change()
       |> Upload.Ecto.cast_upload_path(:logo, opts)
       |> run_prepared_changes()
     end
@@ -172,7 +172,7 @@ defmodule Upload.EctoTest do
   describe "composing casters" do
     defp cast_and_upload_any(logo, opts \\ []) do
       %{"logo" => logo}
-      |> Company.change
+      |> Company.change()
       |> Upload.Ecto.cast_upload(:logo, opts)
       |> Upload.Ecto.cast_upload_path(:logo, opts)
       |> run_prepared_changes()

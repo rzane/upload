@@ -39,12 +39,11 @@ defmodule Upload.Adapters.Local do
 
   @impl true
   def transfer(%Upload{key: key, path: path} = upload) do
-    filename  = Path.join(storage_path(), key)
+    filename = Path.join(storage_path(), key)
     directory = Path.dirname(filename)
 
     with :ok <- File.mkdir_p(directory),
-         :ok <- File.cp(path, filename)
-    do
+         :ok <- File.cp(path, filename) do
       {:ok, %Upload{upload | status: :transferred}}
     else
       _ ->

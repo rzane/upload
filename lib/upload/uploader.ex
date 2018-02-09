@@ -34,28 +34,23 @@ defmodule Upload.Uploader do
       defdelegate cast_path(uploadable_path, opts), to: Upload
       defdelegate transfer(upload), to: Upload
 
-      defoverridable [
-        cast: 1,
-        cast: 2,
-        cast_path: 1,
-        cast_path: 2,
-        transfer: 1
-      ]
+      defoverridable cast: 1,
+                     cast: 2,
+                     cast_path: 1,
+                     cast_path: 2,
+                     transfer: 1
     end
   end
 
-  @callback cast(Upload.uploadable) ::
-    {:ok, Upload.t} | {:error, String.t} | :error
+  @callback cast(Upload.uploadable()) :: {:ok, Upload.t()} | {:error, String.t()} | :error
 
-  @callback cast(Upload.uploadable, list) ::
-    {:ok, Upload.t} | {:error, String.t} | :error
+  @callback cast(Upload.uploadable(), list) :: {:ok, Upload.t()} | {:error, String.t()} | :error
 
-  @callback cast_path(Upload.uploadable_path) ::
-    {:ok, Upload.t} | {:error, String.t} | :error
+  @callback cast_path(Upload.uploadable_path()) ::
+              {:ok, Upload.t()} | {:error, String.t()} | :error
 
-  @callback cast_path(Upload.uploadable_path, list) ::
-    {:ok, Upload.t} | {:error, String.t} | :error
+  @callback cast_path(Upload.uploadable_path(), list) ::
+              {:ok, Upload.t()} | {:error, String.t()} | :error
 
-  @callback transfer(Upload.t) ::
-    {:ok, Upload.transferred} | {:error, any}
+  @callback transfer(Upload.t()) :: {:ok, Upload.transferred()} | {:error, any}
 end

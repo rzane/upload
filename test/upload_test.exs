@@ -1,13 +1,14 @@
 defmodule UploadTest do
   use ExUnit.Case
 
-  doctest Upload, except: [
-    get_url: 1,
-    transfer: 1,
-    generate_key: 2,
-    cast: 2,
-    cast_path: 2
-  ]
+  doctest Upload,
+    except: [
+      get_url: 1,
+      transfer: 1,
+      generate_key: 2,
+      cast: 2,
+      cast_path: 2
+    ]
 
   @fixture Path.expand("./fixtures/text.txt", __DIR__)
   @plug %Plug.Upload{path: @fixture, filename: "text.txt"}

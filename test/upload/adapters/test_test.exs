@@ -18,13 +18,13 @@ defmodule Upload.Adapters.TestTest do
   end
 
   test "get_uploads/1 and put_upload/1" do
-    assert Adapter.get_uploads == %{}
+    assert Adapter.get_uploads() == %{}
     Adapter.put_upload(@upload)
-    assert Adapter.get_uploads == %{"foo/text.txt" => @upload}
+    assert Adapter.get_uploads() == %{"foo/text.txt" => @upload}
   end
 
   test "transfer/1 adds the upload to state" do
-    assert Adapter.get_uploads == %{}
+    assert Adapter.get_uploads() == %{}
     assert {:ok, %Upload{key: key}} = Adapter.transfer(@upload)
     assert Map.get(Adapter.get_uploads(), key) == %Upload{@upload | status: :transferred}
   end
