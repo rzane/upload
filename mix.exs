@@ -48,18 +48,16 @@ defmodule Upload.Mixfile do
       {:plug, ">= 0.0.0"},
 
       # S3 Adapter
-      {:httpoison, "~> 0.11", optional: true},
-      {:ex_aws, "~> 1.1", optional: true},
-      {:poison, "~> 2.2 or ~> 3.1", optional: true},
-      {:sweet_xml, "~> 0.6", optional: true},
+      {:ex_aws_s3, "~> 2.0", optional: true},
 
       # Ecto integration
       {:ecto, ">= 0.0.0", optional: true},
 
-      {:exvcr, "~> 0.8", only: :test},
+      # Test dependencies for this package
+      {:poison, "~> 3.0", only: :test},
+      {:hackney, "~> 1.9", only: :test},
       {:excoveralls, "~> 0.7", only: :test},
       {:ex_doc, "~> 0.16", only: :dev, runtime: false},
-      {:mix_test_watch, "~> 0.3", only: :dev, runtime: false},
       {:dialyxir, "~> 0.5", only: :dev, runtime: false}
     ]
   end

@@ -1,6 +1,5 @@
 defmodule Upload.Adapters.S3Test do
   use ExUnit.Case, async: true
-  use ExVCR.Mock, adapter: ExVCR.Adapter.Hackney
 
   doctest Upload.Adapters.S3
 
@@ -20,12 +19,7 @@ defmodule Upload.Adapters.S3Test do
   end
 
   setup_all do
-    ExVCR.Config.cassette_library_dir("test/fixtures/cassettes")
-
-    use_cassette "s3/setup" do
-      ensure_bucket_exists!()
-    end
-
+    ensure_bucket_exists!()
     :ok
   end
 
@@ -35,9 +29,7 @@ defmodule Upload.Adapters.S3Test do
   end
 
   test "transfer/1" do
-    use_cassette "s3/transfer" do
-      assert {:ok, %Upload{key: key, status: :transferred}} = Adapter.transfer(@upload)
-      assert {:ok, %{body: "MEATLOAF\n"}} = get_object(key)
-    end
+    assert {:ok, %Upload{key: key, status: :transferred}} = Adapter.transfer(@upload)
+    assert {:ok, %{body: "MEATLOAF\n"}} = get_object(key)
   end
 end
