@@ -32,4 +32,8 @@ defmodule Upload.Adapters.TestTest do
   test "get_url/1 just returns the key" do
     assert Adapter.get_url("foo/bar.txt") == "foo/bar.txt"
   end
+
+  test "get_signed_url/1" do
+    assert Adapter.get_signed_url("foo/bar.txt") == {:ok, "foo/bar.txt"}
+  end
 end

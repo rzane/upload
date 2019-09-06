@@ -54,6 +54,20 @@ defmodule Upload do
   def get_url(key) when is_binary(key), do: adapter().get_url(key)
 
   @doc """
+  Get the URL for a given key. It will behave differently based
+  on the adapter you're using.
+
+  ### Examples
+
+      iex> Upload.get_url("123456.png")
+      {:ok, "http://yoururl.com/123456.png"}
+
+  """
+  @spec get_signed_url(Upload.t() | String.t()) :: {:ok, String.t()} | {:error, String.t()}
+  def get_signed_url(%__MODULE__{key: key}), do: get_signed_url(key)
+  def get_signed_url(key) when is_binary(key), do: adapter().get_signed_url(key)
+
+  @doc """
   Transfer the file to where it will be stored.
   """
   @spec transfer(Upload.t()) :: {:ok, Upload.transferred()} | {:error, String.t()}

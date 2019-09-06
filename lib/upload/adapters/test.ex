@@ -53,6 +53,9 @@ defmodule Upload.Adapters.Test do
   end
 
   @impl true
+  def get_signed_url(key), do: {:ok, get_url(key)}
+
+  @impl true
   def transfer(%Upload{} = upload) do
     upload = %Upload{upload | status: :transferred}
     put_upload(upload)

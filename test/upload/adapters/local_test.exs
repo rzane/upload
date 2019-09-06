@@ -18,6 +18,10 @@ defmodule Upload.Adapters.LocalTest do
     assert Adapter.get_url("foo/bar.txt") == "/uploads/foo/bar.txt"
   end
 
+  test "get_signed_url/1" do
+    assert Adapter.get_signed_url("foo/bar.txt") == {:ok, "/uploads/foo/bar.txt"}
+  end
+
   test "transfer/1" do
     assert {:ok, %Upload{key: key, status: :transferred}} = Adapter.transfer(@upload)
     assert File.exists?(Path.join(Adapter.storage_path(), key))

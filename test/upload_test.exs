@@ -4,6 +4,7 @@ defmodule UploadTest do
   doctest Upload,
     except: [
       get_url: 1,
+      get_signed_url: 1,
       transfer: 1,
       generate_key: 2,
       cast: 2,
@@ -21,6 +22,16 @@ defmodule UploadTest do
 
     assert Upload.get_url(upload) == upload.key
     assert Upload.get_url(upload.key) == upload.key
+  end
+
+  test "get_signed_url/1" do
+    start_supervised(Upload.Adapters.Test)
+
+    assert {:ok, upload} = Upload.cast_path(@fixture)
+    assert {:ok, upload} = Upload.transfer(upload)
+
+    assert Upload.get_signed_url(upload) == {:ok, upload.key}
+    assert Upload.get_signed_url(upload.key) == {:ok, upload.key}
   end
 
   test "generate_key/1" do

@@ -7,6 +7,9 @@ defmodule Upload.Adapters.Fake do
   end
 
   @impl true
+  def get_signed_url(key), do: {:ok, get_url(key)}
+
+  @impl true
   def transfer(%Upload{} = upload) do
     {:ok, %Upload{upload | status: :transferred}}
   end

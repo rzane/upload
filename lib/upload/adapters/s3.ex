@@ -35,6 +35,13 @@ if Code.ensure_compiled?(ExAws.S3) do
     end
 
     @impl true
+    def get_signed_url(key) do
+      :s3
+      |> ExAws.Config.new()
+      |> ExAws.S3.presigned_url(:get, bucket(), key)
+    end
+
+    @impl true
     def transfer(%Upload{key: key, path: path} = upload) do
       case put_object(key, path) do
         {:ok, _} ->

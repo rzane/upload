@@ -28,6 +28,10 @@ defmodule Upload.Adapters.S3Test do
     assert Adapter.get_url("foo/bar.txt") == "https://my_bucket_name.s3.amazonaws.com/foo/bar.txt"
   end
 
+  test "get_signed_url/1" do
+    assert {:ok, _} = Adapter.get_signed_url("foo.txt")
+  end
+
   test "transfer/1" do
     assert {:ok, %Upload{key: key, status: :transferred}} = Adapter.transfer(@upload)
     assert {:ok, %{body: "MEATLOAF\n"}} = get_object(key)
