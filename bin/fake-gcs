@@ -1,0 +1,4 @@
+#!/bin/bash
+
+set -e
+docker run --name fake-gcs --rm -p 4443:4443 fsouza/fake-gcs-server
