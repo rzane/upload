@@ -1,4 +1,4 @@
-if Code.ensure_compiled?(ExAws) do
+if Code.ensure_compiled?(ExAws.S3) do
   defmodule Upload.Adapters.S3 do
     use Upload.Adapter
     alias Upload.Config
@@ -8,7 +8,7 @@ if Code.ensure_compiled?(ExAws) do
 
     ## Examples
 
-        iex> Upload.Adapters.S3.bucket
+        iex> Upload.Adapters.S3.bucket()
         "my_bucket_name"
 
     """
@@ -36,18 +36,19 @@ if Code.ensure_compiled?(ExAws) do
 
     @impl true
     def transfer(%Upload{key: key, path: path} = upload) do
-      with {:ok, data} <- File.read(path),
-           {:ok, _} <- put_object(key, data) do
-        {:ok, %Upload{upload | status: :transferred}}
-      else
+      case put_object(key, path) do
+        {:ok, _} ->
+          {:ok, %Upload{upload | status: :transferred}}
+
         _ ->
           {:error, "failed to transfer file"}
       end
     end
 
-    defp put_object(key, data) do
-      bucket()
-      |> ExAws.S3.put_object(key, data)
+    defp put_object(key, path) do
+      path
+      |> ExAws.S3.Upload.stream_file()
+      |> ExAws.S3.upload(bucket(), key)
       |> ExAws.request()
     end
   end
