@@ -1,4 +1,13 @@
 #!/bin/bash
 
 set -e
-docker run --name fake-gcs --rm -p 4443:4443 fsouza/fake-gcs-server
+
+mkdir -p tmp/gcs-storage
+mkdir -p tmp/gcs-data
+
+docker run \
+  -v "$(pwd)/tmp/gcs-storage:/storage" \
+  -v "$(pwd)/tmp/gcs-data:/data" \
+  --name fake-gcs \
+  --rm -p 4443:4443 \
+  fsouza/fake-gcs-server

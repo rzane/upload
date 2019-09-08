@@ -3,8 +3,11 @@
 use Mix.Config
 
 config :upload, Upload, adapter: Upload.Adapters.Test
-
 config :upload, Upload.Adapters.S3, bucket: "my_bucket_name"
+
+config :upload, Upload.Adapters.GCS,
+  bucket: "my_bucket_name",
+  connection: Upload.Adapters.GCS.Anonymous
 
 # Point ex_aws at local fakes3
 config :ex_aws,
@@ -18,6 +21,12 @@ config :ex_aws, :s3,
   host: "localhost",
   port: 4569,
   region: "us-east-1"
+
+config :goth,
+  disabled: true
+
+config :google_api_storage,
+  base_url: "https://localhost:4443"
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
