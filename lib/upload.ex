@@ -59,13 +59,17 @@ defmodule Upload do
 
   ### Examples
 
-      iex> Upload.get_url("123456.png")
-      {:ok, "http://yoururl.com/123456.png"}
+      iex> Upload.get_signed_url("123456.png")
+      {:ok, "http://yoururl.com/123456.png?X-Amz-Expires=3600..."}
+
+      iex> Upload.get_signed_url("123456.png", expires_in: 4200)
+      {:ok, "http://yoururl.com/123456.png?X-Amz-Expires=4200..."}
 
   """
-  @spec get_signed_url(Upload.t() | String.t()) :: {:ok, String.t()} | {:error, String.t()}
-  def get_signed_url(%__MODULE__{key: key}), do: get_signed_url(key)
-  def get_signed_url(key) when is_binary(key), do: adapter().get_signed_url(key)
+  @spec get_signed_url(Upload.t() | String.t(), Keyword.t()) :: {:ok, String.t()} | {:error, String.t()}
+  def get_signed_url(upload, opts \\ [])
+  def get_signed_url(%__MODULE__{key: key}, opts), do: get_signed_url(key, opts)
+  def get_signed_url(key, opts) when is_binary(key), do: adapter().get_signed_url(key, opts)
 
   @doc """
   Transfer the file to where it will be stored.

@@ -57,9 +57,7 @@ if Code.ensure_compiled?(GoogleApi.Storage.V1.Connection) do
     end
 
     @impl true
-    def get_signed_url(key) do
-      # TODO: Allow get_signed_url to accept options.
-      opts = []
+    def get_signed_url(key, opts) do
       signer = Config.get(__MODULE__, :signer, Signer)
 
       key

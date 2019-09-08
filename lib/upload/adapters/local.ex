@@ -34,7 +34,7 @@ defmodule Upload.Adapters.Local do
   end
 
   @impl true
-  def get_signed_url(key), do: {:ok, get_url(key)}
+  def get_signed_url(key, _opts), do: {:ok, get_url(key)}
 
   @impl true
   def transfer(%Upload{key: key, path: path} = upload) do

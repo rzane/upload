@@ -18,8 +18,8 @@ defmodule Upload.Adapters.LocalTest do
     assert Adapter.get_url("foo/bar.txt") == "/uploads/foo/bar.txt"
   end
 
-  test "get_signed_url/1" do
-    assert Adapter.get_signed_url("foo/bar.txt") == {:ok, "/uploads/foo/bar.txt"}
+  test "get_signed_url/2" do
+    assert Adapter.get_signed_url("foo/bar.txt", []) == {:ok, "/uploads/foo/bar.txt"}
   end
 
   test "transfer/1" do

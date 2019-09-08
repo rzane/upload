@@ -28,16 +28,20 @@ defmodule Upload.Adapters.GCSTest do
              "https://storage.googleapis.com/my_bucket_name/foo/bar.txt"
   end
 
-  test "get_signed_url/1" do
-    assert {:ok, url} = Adapter.get_signed_url("foo.txt")
-
-    uri = URI.parse(url)
-    query = URI.decode_query(uri.query)
-
+  test "get_signed_url/2" do
+    assert {:ok, url} = Adapter.get_signed_url("foo.txt", [])
+    query = url |> URI.parse() |> Map.fetch!(:query) |> URI.decode_query()
     assert query["Expires"] == "3600"
     assert query["GoogleAccessId"]
     assert query["Signature"]
   end
+
+  test "get_signed_url/2 with a custom expiration" do
+    assert {:ok, url} = Adapter.get_signed_url("foo.txt", expires_in: 100)
+    query = url |> URI.parse() |> Map.fetch!(:query) |> URI.decode_query()
+    assert query["Expires"] == "100"
+  end
+
 
   test "transfer/1", %{conn: conn} do
     assert {:ok, %Upload{key: key, status: :transferred}} = Adapter.transfer(@upload)

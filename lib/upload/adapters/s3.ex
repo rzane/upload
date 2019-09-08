@@ -35,10 +35,10 @@ if Code.ensure_compiled?(ExAws.S3) do
     end
 
     @impl true
-    def get_signed_url(key) do
+    def get_signed_url(key, opts) do
       :s3
       |> ExAws.Config.new()
-      |> ExAws.S3.presigned_url(:get, bucket(), key)
+      |> ExAws.S3.presigned_url(:get, bucket(), key, opts)
     end
 
     @impl true
