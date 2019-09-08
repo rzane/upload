@@ -35,6 +35,19 @@ if Code.ensure_compiled?(GoogleApi.Storage.V1.Connection) do
     def bucket, do: Config.fetch!(__MODULE__, :bucket)
 
     @doc """
+    The base URL that all resources are hosted on.
+
+    ## Examples
+
+        iex> Upload.Adapters.GCS.uri()
+        "https://storage.googleapis.com/my_bucket_name/"
+
+    """
+    def uri do
+      Config.get(__MODULE__, :uri, "https://storage.googleapis.com/#{bucket()}/")
+    end
+
+    @doc """
     Builds a connection to the API.
     """
     def build_connection do
@@ -48,10 +61,16 @@ if Code.ensure_compiled?(GoogleApi.Storage.V1.Connection) do
            {:ok, _} <- put_object(conn, key, path) do
         {:ok, %Upload{upload | status: :transferred}}
       else
-        error ->
-          IO.inspect(error)
+        _error ->
           {:error, "failed to transfer file"}
       end
+    end
+
+    @impl true
+    def get_url(key) do
+      uri()
+      |> URI.merge(key)
+      |> URI.to_string()
     end
 
     defp put_object(conn, key, path) do

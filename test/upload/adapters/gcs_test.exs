@@ -31,10 +31,10 @@ defmodule Upload.Adapters.GCSTest do
     :ok
   end
 
-  # test "get_url/1" do
-  #   assert Adapter.get_url("foo.txt") == "https://my_bucket_name.s3.amazonaws.com/foo.txt"
-  #   assert Adapter.get_url("foo/bar.txt") == "https://my_bucket_name.s3.amazonaws.com/foo/bar.txt"
-  # end
+  test "get_url/1" do
+    assert Adapter.get_url("foo.txt") == "https://storage.googleapis.com/my_bucket_name/foo.txt"
+    assert Adapter.get_url("foo/bar.txt") == "https://storage.googleapis.com/my_bucket_name/foo/bar.txt"
+  end
 
   # test "get_signed_url/1" do
   #   assert {:ok, _} = Adapter.get_signed_url("foo.txt")

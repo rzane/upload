@@ -19,7 +19,7 @@ if Code.ensure_compiled?(ExAws.S3) do
 
     ## Examples
 
-        iex> Upload.Adapters.S3.uri
+        iex> Upload.Adapters.S3.uri()
         "https://my_bucket_name.s3.amazonaws.com"
 
     """
