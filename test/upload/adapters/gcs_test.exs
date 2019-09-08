@@ -11,37 +11,36 @@ defmodule Upload.Adapters.GCSTest do
   @project System.get_env("GCS_PROJECT") || "whatever"
   @bucket Adapter.bucket()
 
-  defp ensure_bucket_exists do
+  setup_all do
     {:ok, conn} = Adapter.build_connection()
-
-    GoogleApi.Storage.V1.Api.Buckets.storage_buckets_insert(
+    {:ok, _} = GoogleApi.Storage.V1.Api.Buckets.storage_buckets_insert(
       conn,
       @project,
       body: %{name: @bucket}
     )
-  end
 
-  defp get_object(key) do
-    {:ok, conn} = Adapter.build_connection()
-    GoogleApi.Storage.V1.Api.Objects.storage_objects_get(conn, @bucket, key)
-  end
-
-  setup_all do
-    {:ok, _bucket} = ensure_bucket_exists()
-    :ok
+    {:ok, conn: conn}
   end
 
   test "get_url/1" do
     assert Adapter.get_url("foo.txt") == "https://storage.googleapis.com/my_bucket_name/foo.txt"
-    assert Adapter.get_url("foo/bar.txt") == "https://storage.googleapis.com/my_bucket_name/foo/bar.txt"
+    assert Adapter.get_url("foo/bar.txt") ==
+             "https://storage.googleapis.com/my_bucket_name/foo/bar.txt"
   end
 
-  # test "get_signed_url/1" do
-  #   assert {:ok, _} = Adapter.get_signed_url("foo.txt")
-  # end
+  test "get_signed_url/1" do
+    assert {:ok, url} = Adapter.get_signed_url("foo.txt")
 
-  test "transfer/1" do
+    uri = URI.parse(url)
+    query = URI.decode_query(uri.query)
+
+    assert query["Expires"] == "3600"
+    assert query["GoogleAccessId"]
+    assert query["Signature"]
+  end
+
+  test "transfer/1", %{conn: conn} do
     assert {:ok, %Upload{key: key, status: :transferred}} = Adapter.transfer(@upload)
-    assert {:ok, _} = get_object(key)
+    assert {:ok, _} = GoogleApi.Storage.V1.Api.Objects.storage_objects_get(conn, @bucket, key)
   end
 end
