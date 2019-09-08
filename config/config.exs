@@ -4,17 +4,17 @@ use Mix.Config
 
 config :upload, Upload, adapter: Upload.Adapters.Test
 config :upload, Upload.Adapters.S3, bucket: "my_bucket_name"
-
 config :upload, Upload.Adapters.GCS,
   bucket: "my_bucket_name",
   connection: Upload.Adapters.GCS.Anonymous
 
-# Point ex_aws at local fakes3
+# Configuration For AWS
 config :ex_aws,
   access_key_id: "foo",
   secret_access_key: "bar"
 
-config :ex_aws, :retries, max_attempts: 1
+config :ex_aws, :retries,
+  max_attempts: 1
 
 config :ex_aws, :s3,
   scheme: "http://",
@@ -22,11 +22,14 @@ config :ex_aws, :s3,
   port: 4569,
   region: "us-east-1"
 
-config :goth,
-  disabled: true
+# Configuration for Google Cloud Storage
+config :google_api_storage, base_url: "https://localhost:4443"
 
-config :google_api_storage,
-  base_url: "https://localhost:4443"
+if System.get_env("GCP_CREDENTIALS") do
+  config :goth, json: {:system, "GCP_CREDENTIALS"}
+else
+  config :goth, disabled: true
+end
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
