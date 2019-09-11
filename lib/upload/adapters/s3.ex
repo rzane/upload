@@ -19,7 +19,7 @@ if Code.ensure_compiled?(ExAws.S3) do
 
     ## Examples
 
-        iex> Upload.Adapters.S3.uri
+        iex> Upload.Adapters.S3.uri()
         "https://my_bucket_name.s3.amazonaws.com"
 
     """
@@ -35,10 +35,10 @@ if Code.ensure_compiled?(ExAws.S3) do
     end
 
     @impl true
-    def get_signed_url(key) do
+    def get_signed_url(key, opts) do
       :s3
       |> ExAws.Config.new()
-      |> ExAws.S3.presigned_url(:get, bucket(), key)
+      |> ExAws.S3.presigned_url(:get, bucket(), key, opts)
     end
 
     @impl true

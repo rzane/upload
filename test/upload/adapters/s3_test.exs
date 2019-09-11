@@ -28,8 +28,22 @@ defmodule Upload.Adapters.S3Test do
     assert Adapter.get_url("foo/bar.txt") == "https://my_bucket_name.s3.amazonaws.com/foo/bar.txt"
   end
 
-  test "get_signed_url/1" do
-    assert {:ok, _} = Adapter.get_signed_url("foo.txt")
+  test "get_signed_url/2" do
+    assert {:ok, url} = Adapter.get_signed_url("foo.txt", [])
+    query = url |> URI.parse() |> Map.fetch!(:query) |> URI.decode_query()
+
+    assert query["X-Amz-Algorithm"]
+    assert query["X-Amz-Credential"]
+    assert query["X-Amz-Date"]
+    assert query["X-Amz-Expires"] == "3600"
+    assert query["X-Amz-Signature"]
+    assert query["X-Amz-SignedHeaders"]
+  end
+
+  test "get_signed_url/2 with a custom expiration" do
+    assert {:ok, url} = Adapter.get_signed_url("foo.txt", expires_in: 100)
+    query = url |> URI.parse() |> Map.fetch!(:query) |> URI.decode_query()
+    assert query["X-Amz-Expires"] == "100"
   end
 
   test "transfer/1" do

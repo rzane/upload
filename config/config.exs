@@ -3,15 +3,15 @@
 use Mix.Config
 
 config :upload, Upload, adapter: Upload.Adapters.Test
-
 config :upload, Upload.Adapters.S3, bucket: "my_bucket_name"
 
-# Point ex_aws at local fakes3
+# Configuration For AWS
 config :ex_aws,
   access_key_id: "foo",
   secret_access_key: "bar"
 
-config :ex_aws, :retries, max_attempts: 1
+config :ex_aws, :retries,
+  max_attempts: 1
 
 config :ex_aws, :s3,
   scheme: "http://",

@@ -48,12 +48,10 @@ defmodule Upload.Adapters.Test do
   end
 
   @impl true
-  def get_url(key) do
-    key
-  end
+  def get_url(key), do: key
 
   @impl true
-  def get_signed_url(key), do: {:ok, get_url(key)}
+  def get_signed_url(key, _opts), do: {:ok, get_url(key)}
 
   @impl true
   def transfer(%Upload{} = upload) do
