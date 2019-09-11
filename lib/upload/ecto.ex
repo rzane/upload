@@ -20,19 +20,19 @@ if Code.ensure_compiled?(Ecto) do
 
     ## Example
 
-        def changeset(user, params \\ %{}) do
+        def changeset(user, params \\\\ %{}) do
           user
           |> cast(params, [:name])
           |> Upload.Ecto.cast_upload(:logo)
         end
 
-        def changeset(user, params \\ %{}) do
+        def changeset(user, params \\\\ %{}) do
           user
           |> cast(params, [:name])
           |> Upload.Ecto.cast_upload(:logo, prefix: ["logos"])
         end
 
-        def changeset(user, params \\ %{}) do
+        def changeset(user, params \\\\ %{}) do
           user
           |> cast(params, [:name])
           |> Upload.Ecto.cast_upload(:logo, with: MyCustomUploader)
