@@ -8,7 +8,7 @@ An opinionated file uploader for Elixir projects.
 Upload offers the following features:
 
 * Minimal API
-* Sane defaults
+* Reasonable defaults
 * Ecto integration
 * Multiple storage adapters
 
