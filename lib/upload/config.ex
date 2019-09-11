@@ -1,4 +1,6 @@
 defmodule Upload.Config do
+  @moduledoc false
+
   @doc """
   Get a configuration variable and fallback to the default.
   """

@@ -141,12 +141,8 @@ config :upload, Upload, adapter: Upload.Adapters.Test
 In your tests, you can make assertions:
 
 ```elixir
-setup do
-  {:ok, _} = start_supervised(Upload.Adapters.Test)
-  :ok
-end
-
 test "files are uploaded" do
+  assert {:ok, _} = start_supervised(Upload.Adapters.Test)
   assert {:ok, upload} = Upload.cast_path("/path/to/file.txt")
   assert {:ok, upload} = Upload.transfer(upload)
   assert Map.size(Upload.Adapters.Test.get_uploads()) == 1

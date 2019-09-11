@@ -1,4 +1,15 @@
 defmodule Upload.Adapters.Local do
+  @moduledoc """
+  An `Upload.Adapter` that saves files to disk.
+
+  ### Configuration
+
+      config :upload, Upload.Adapters.Local,
+        base_url: "/uploads", # optional
+        storage_path: "priv/static/uploads" # optional
+
+  """
+
   use Upload.Adapter
   alias Upload.Config
 
@@ -7,7 +18,7 @@ defmodule Upload.Adapters.Local do
 
   ## Examples
 
-      iex> Upload.Adapters.Local.storage_path
+      iex> Upload.Adapters.Local.storage_path()
       "priv/static/uploads"
 
   """
@@ -20,18 +31,16 @@ defmodule Upload.Adapters.Local do
 
   ## Examples
 
-      iex> Upload.Adapters.Local.public_path
+      iex> Upload.Adapters.Local.base_url()
       "/uploads"
 
   """
-  def public_path do
-    Config.get(__MODULE__, :public_path, "/uploads")
+  def base_url do
+    Config.get(__MODULE__, :base_url, "/uploads")
   end
 
   @impl true
-  def get_url(key) do
-    join_url(public_path(), key)
-  end
+  def get_url(key), do: join_url(base_url(), key)
 
   @impl true
   def get_signed_url(key, _opts), do: {:ok, get_url(key)}

@@ -3,19 +3,17 @@ defmodule Upload.Adapters.Test do
   use Agent
 
   @moduledoc """
-  An adapter that keeps track of uploaded files in memory, so that
+  An `Upload.Adapter` that keeps track of uploaded files in memory, so that
   you can make assertions.
 
-  ## Examples
+  ### Example
 
-      %{
-        "123.png" => %Upload{
-          filename: "foo.png",
-          key: "123.png",
-          path: "/path/to/foo.png",
-          status: :pending
-        }
-      }
+      test "files are uploaded" do
+        assert {:ok, _} = start_supervised(Upload.Adapters.Test)
+        assert {:ok, upload} = Upload.cast_path("/path/to/file.txt")
+        assert {:ok, upload} = Upload.transfer(upload)
+        assert Map.size(Upload.Adapters.Test.get_uploads()) == 1
+      end
 
   """
 

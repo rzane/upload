@@ -56,7 +56,7 @@ defmodule Upload.Mixfile do
 
       # Test dependencies for this package
       {:excoveralls, "~> 0.7", only: :test},
-      {:ex_doc, "~> 0.16", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.21", only: :dev, runtime: false},
       {:dialyxir, "~> 0.5", only: :dev, runtime: false}
     ]
   end

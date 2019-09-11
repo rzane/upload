@@ -1,4 +1,8 @@
 defmodule Upload.Adapter do
+  @moduledoc """
+  A behaviour that specifies how an adapter should work.
+  """
+
   defmacro __using__(_) do
     quote do
       @behaviour Upload.Adapter

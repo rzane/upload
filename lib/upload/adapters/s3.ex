@@ -1,5 +1,24 @@
 if Code.ensure_compiled?(ExAws.S3) do
   defmodule Upload.Adapters.S3 do
+    @moduledoc """
+    An `Upload.Adapter` that stores files using Amazon S3.
+
+    ### Requirements
+
+        def deps do
+          [{:ex_aws_s3, "~> 2.0"},
+           {:hackney, ">= 0.0.0"},
+           {:sweet_xml, ">= 0.0.0"}]
+        end
+
+    ### Configuration
+
+        config :upload, Upload.Adapters.S3,
+          bucket: "mybucket", # required
+          base_url: "https://mybucket.s3.amazonaws.com" # optional
+
+    """
+
     use Upload.Adapter
     alias Upload.Config
 
@@ -19,22 +38,24 @@ if Code.ensure_compiled?(ExAws.S3) do
 
     ## Examples
 
-        iex> Upload.Adapters.S3.uri()
+        iex> Upload.Adapters.S3.base_url()
         "https://my_bucket_name.s3.amazonaws.com"
 
     """
-    def uri do
-      Config.get(__MODULE__, :uri, "https://#{bucket()}.s3.amazonaws.com")
+    def base_url do
+      Config.get(__MODULE__, :base_url, "https://#{bucket()}.s3.amazonaws.com")
     end
 
     @impl true
     def get_url(key) do
-      uri()
+      base_url()
       |> URI.merge(key)
       |> URI.to_string()
     end
 
     @impl true
+    @spec get_signed_url(String.t(), ExAws.S3.presigned_url_opts()) ::
+            {:ok, String.t()} | {:error, String.t()}
     def get_signed_url(key, opts) do
       :s3
       |> ExAws.Config.new()

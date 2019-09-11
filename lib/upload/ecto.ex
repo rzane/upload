@@ -1,5 +1,9 @@
 if Code.ensure_compiled?(Ecto) do
   defmodule Upload.Ecto do
+    @moduledoc """
+    Allows Ecto to handle file uploads.
+    """
+
     import Ecto.Changeset,
       only: [
         put_change: 3,
