@@ -66,7 +66,8 @@ defmodule Upload do
       {:ok, "http://yoururl.com/123456.png?X-Amz-Expires=4200..."}
 
   """
-  @spec get_signed_url(Upload.t() | String.t(), Keyword.t()) :: {:ok, String.t()} | {:error, String.t()}
+  @spec get_signed_url(Upload.t() | String.t(), Keyword.t()) ::
+          {:ok, String.t()} | {:error, String.t()}
   def get_signed_url(upload, opts \\ [])
   def get_signed_url(%__MODULE__{key: key}, opts), do: get_signed_url(key, opts)
   def get_signed_url(key, opts) when is_binary(key), do: adapter().get_signed_url(key, opts)

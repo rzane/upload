@@ -13,17 +13,20 @@ defmodule Upload.Adapters.GCSTest do
 
   setup_all do
     {:ok, conn} = Adapter.build_connection()
-    {:ok, _} = GoogleApi.Storage.V1.Api.Buckets.storage_buckets_insert(
-      conn,
-      @project,
-      body: %{name: @bucket}
-    )
+
+    {:ok, _} =
+      GoogleApi.Storage.V1.Api.Buckets.storage_buckets_insert(
+        conn,
+        @project,
+        body: %{name: @bucket}
+      )
 
     {:ok, conn: conn}
   end
 
   test "get_url/1" do
     assert Adapter.get_url("foo.txt") == "https://storage.googleapis.com/my_bucket_name/foo.txt"
+
     assert Adapter.get_url("foo/bar.txt") ==
              "https://storage.googleapis.com/my_bucket_name/foo/bar.txt"
   end
@@ -41,7 +44,6 @@ defmodule Upload.Adapters.GCSTest do
     query = url |> URI.parse() |> Map.fetch!(:query) |> URI.decode_query()
     assert query["Expires"] == "100"
   end
-
 
   test "transfer/1", %{conn: conn} do
     assert {:ok, %Upload{key: key, status: :transferred}} = Adapter.transfer(@upload)

@@ -59,10 +59,7 @@ if Code.ensure_compiled?(GoogleApi.Storage.V1.Connection) do
     @impl true
     def get_signed_url(key, opts) do
       signer = Config.get(__MODULE__, :signer, Signer)
-
-      key
-      |> get_url()
-      |> signer.call(opts)
+      signer.sign(bucket(), key, opts)
     end
 
     defp put_object(conn, key, path) do
@@ -97,29 +94,32 @@ if Code.ensure_compiled?(GoogleApi.Storage.V1.Connection) do
   end
 
   defmodule Upload.Adapters.GCS.Signer do
-    @otp_above_21 :erlang.system_info(:otp_release) >= '21'
+    @base_url "https://storage.googleapis.com"
+    @otp_greater_21 :erlang.system_info(:otp_release) >= '21'
 
-    def call(url, opts) do
-      uri = URI.parse(url)
+    def sign(bucket, key, opts \\ []) do
+      path = "/#{bucket}/#{URI.encode(key)}"
       verb = Keyword.get(opts, :verb, "GET")
       account = Keyword.get(opts, :account, :default)
-      md5_digest = Keyword.get(opts, :md5_digest, "")
       content_type = Keyword.get(opts, :content_type, "")
       expires_in = Keyword.get(opts, :expires_in, 3600)
-      data = Enum.join([verb, md5_digest, content_type, expires_in, uri.path], "\n")
+      md5_digest = Keyword.get(opts, :md5_digest, "")
 
       with {:ok, client_email} <- get_config(account, "client_email"),
-           {:ok, private_key} <- get_config(account, "private_key"),
-           {:ok, signature} <- generate_signature(data, private_key) do
-        query =
-          uri
-          |> decode_query()
-          |> Map.put("GoogleAccessId", client_email)
-          |> Map.put("Expires", expires_in)
-          |> Map.put("Signature", signature)
-          |> URI.encode_query()
+            {:ok, private_key} <- get_config(account, "private_key") do
+        signature =
+          [verb, md5_digest, content_type, expires_in, path]
+          |> Enum.join("\n")
+          |> :public_key.sign(:sha256, decode_private_key(private_key))
+          |> Base.encode64()
 
-        {:ok, URI.to_string(%URI{uri | query: query})}
+        query = %{
+          "GoogleAccessId" => client_email,
+          "Expires" => expires_in,
+          "Signature" => signature
+        }
+
+        {:ok, Enum.join([@base_url, path, "?", URI.encode_query(query)])}
       end
     end
 
@@ -133,28 +133,16 @@ if Code.ensure_compiled?(GoogleApi.Storage.V1.Connection) do
       end
     end
 
-    defp generate_signature(data, private_key) do
-      try do
-        private_key = decode_private_key!(private_key)
-        signature = :public_key.sign(data, :sha256, private_key)
-        {:ok, Base.encode64(signature)}
-      rescue
-        _error ->
-          {:error, "failed to sign data"}
-      end
-    end
-
-    defp decode_private_key!(private_key) do
+    defp decode_private_key(private_key) do
       private_key
       |> :public_key.pem_decode()
       |> (fn [x] -> x end).()
       |> :public_key.pem_entry_decode()
-      |> normalize_private_key!()
+      |> normalize_private_key
     end
 
-    # Prior to OTP 21, service account keys required additional decoding.
-    defp normalize_private_key!(private_key) do
-      if @otp_above_21 do
+    defp normalize_private_key(private_key) do
+      if @otp_greater_21 do
         private_key
       else
         private_key
@@ -162,8 +150,5 @@ if Code.ensure_compiled?(GoogleApi.Storage.V1.Connection) do
         |> (fn pk -> :public_key.der_decode(:RSAPrivateKey, pk) end).()
       end
     end
-
-    defp decode_query(%URI{query: nil}), do: %{}
-    defp decode_query(%URI{query: query}), do: URI.decode_query(query)
   end
 end
