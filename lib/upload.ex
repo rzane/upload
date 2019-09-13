@@ -23,7 +23,7 @@ defmodule Upload do
       def changeset(upload, attrs \\ %{}) do
         upload
         |> cast(attrs, @fields)
-        |> validate_required(:key)
+        |> validate_required([:key, :filename])
       end
     end
   end

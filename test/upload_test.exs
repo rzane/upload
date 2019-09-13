@@ -29,9 +29,10 @@ defmodule UploadTest do
 
   test "saves a file" do
     assert {:ok, _} = start_supervised(FileStore.Adapters.Test)
-    changeset = Person.changeset(%Person{}, %{avatar: %{key: "foo"}})
+    changeset = Person.changeset(%Person{}, %{avatar: %{key: "foo", filename: "bar"}})
 
     assert {:ok, person} = Repo.insert(changeset)
     assert person.avatar.key == "foo"
+    assert person.avatar.filename == "bar"
   end
 end
