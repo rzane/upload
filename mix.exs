@@ -45,11 +45,7 @@ defmodule Upload.Mixfile do
     [
       {:uuid, "~> 1.1"},
       {:plug, ">= 0.0.0"},
-
-      # S3 Adapter
-      {:ex_aws_s3, "~> 2.0", optional: true},
-      {:hackney, ">= 0.0.0", optional: true},
-      {:sweet_xml, ">= 0.0.0", optional: true},
+      {:file_store, ">= 0.0.0", path: "../file_store"},
 
       # Ecto integration
       {:ecto, ">= 0.0.0", optional: true},
