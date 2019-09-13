@@ -2,21 +2,15 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-config :upload, Upload, adapter: Upload.Adapters.Test
-config :upload, Upload.Adapters.S3, bucket: "my_bucket_name"
+config :logger, level: :info
 
-# Configuration For AWS
-config :ex_aws,
-  access_key_id: "foo",
-  secret_access_key: "bar"
+config :upload, Upload.Test.Repo,
+  adapter: Ecto.Adapters.Postgres,
+  database: "upload_test",
+  pool: Ecto.Adapters.SQL.Sandbox,
+  priv: "test/support/"
 
-config :ex_aws, :retries, max_attempts: 1
-
-config :ex_aws, :s3,
-  scheme: "http://",
-  host: "localhost",
-  port: 4569,
-  region: "us-east-1"
+config :upload, ecto_repos: [Upload.Test.Repo]
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

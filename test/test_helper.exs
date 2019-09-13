@@ -1,3 +1,3 @@
-{:ok, _} = Application.ensure_all_started(:hackney)
-
+{:ok, _} = Upload.Test.Repo.start_link()
+Ecto.Adapters.SQL.Sandbox.mode(Upload.Test.Repo, :manual)
 ExUnit.start()
