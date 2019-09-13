@@ -21,6 +21,11 @@ defmodule UploadTest do
 
   defmodule Person.Avatar do
     use Upload
+
+    @impl true
+    def store do
+      # Application.get_env()
+    end
   end
 
   setup do
@@ -29,7 +34,10 @@ defmodule UploadTest do
 
   test "saves a file" do
     assert {:ok, _} = start_supervised(FileStore.Adapters.Test)
-    changeset = Person.changeset(%Person{}, %{avatar: %{key: "foo", filename: "bar"}})
+    changeset = Person.changeset(
+      %Person{},
+      %{avatar: %Plug.Upload{filename: "bar", path: "/foo/bar", content_type: "adf"}}
+    )
 
     assert {:ok, person} = Repo.insert(changeset)
     assert person.avatar.key == "foo"
