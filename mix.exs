@@ -43,14 +43,9 @@ defmodule Upload.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:uuid, "~> 1.1"},
+      {:ecto, ">= 0.0.0"},
       {:plug, ">= 0.0.0"},
       {:file_store, ">= 0.0.0", path: "../file_store"},
-
-      # Ecto integration
-      {:ecto, ">= 0.0.0", optional: true},
-
-      # Test dependencies for this package
       {:excoveralls, "~> 0.7", only: :test},
       {:ex_doc, "~> 0.21", only: :dev, runtime: false},
       {:dialyxir, "~> 0.5", only: :dev, runtime: false}
