@@ -5,7 +5,7 @@ defmodule Upload.Test.Person do
   import Upload.Changeset
 
   schema "people" do
-    belongs_to(:avatar, Upload.Schema)
+    belongs_to(:avatar, Upload.Blob)
   end
 
   def changeset(person, attrs \\ %{}) do

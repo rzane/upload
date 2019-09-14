@@ -1,8 +1,12 @@
-defmodule Upload.Schema do
+defmodule Upload.Blob do
+  @moduledoc """
+  An `Ecto.Schema` that represents an upload in the database.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 
-  @table_name Application.get_env(:upload, :table_name, "uploads")
+  @table_name Application.get_env(:upload, :table_name, "upload_blobs")
   @fields [:key, :filename, :content_type, :byte_size, :checksum]
   @required_fields [:key, :filename]
 
