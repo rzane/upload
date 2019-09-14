@@ -16,6 +16,18 @@ defmodule Upload do
           checksum: binary() | nil
         }
 
+  @type keyable() :: t() | Upload.Blob.t() | binary()
+
+  @spec get_public_url(keyable(), Keyword.t()) :: binary()
+  def get_public_url(upload, opts \\ []) do
+    FileStore.get_public_url(file_store(), get_key(upload), opts)
+  end
+
+  @spec get_signed_url(keyable(), Keyword.t()) :: {:ok, binary()} | :error
+  def get_signed_url(upload, opts \\ []) do
+    FileStore.get_signed_url(file_store(), get_key(upload), opts)
+  end
+
   @spec file_store() :: FileStore.t()
   def file_store() do
     case Application.get_env(:upload, :file_store, []) do
@@ -46,4 +58,8 @@ defmodule Upload do
       content_type: MIME.from_path(path)
     }
   end
+
+  defp get_key(%Upload{key: key}), do: key
+  defp get_key(%Upload.Blob{key: key}), do: key
+  defp get_key(key) when is_binary(key), do: key
 end
