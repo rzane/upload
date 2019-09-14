@@ -1,46 +1,19 @@
 defmodule UploadTest do
   use ExUnit.Case
 
-  alias Upload.Test.Repo
+  @path "test/fixtures/test.txt"
+  @plug_upload %Plug.Upload{
+    filename: "test.txt",
+    path: @path,
+    content_type: "text/plain"
+  }
 
-  defmodule Person do
-    use Ecto.Schema
-    import Ecto.Changeset
-    import Upload
+  test "from_plug/1" do
+    upload = Upload.from_plug(@plug_upload)
 
-    schema "people" do
-      embeds_one :avatar, Person.Avatar
-    end
-
-    def changeset(person, attrs \\ %{}) do
-      person
-      |> cast(attrs, [])
-      |> cast_upload(:avatar)
-    end
-  end
-
-  defmodule Person.Avatar do
-    use Upload
-
-    @impl true
-    def store do
-      # Application.get_env()
-    end
-  end
-
-  setup do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
-  end
-
-  test "saves a file" do
-    assert {:ok, _} = start_supervised(FileStore.Adapters.Test)
-    changeset = Person.changeset(
-      %Person{},
-      %{avatar: %Plug.Upload{filename: "bar", path: "/foo/bar", content_type: "adf"}}
-    )
-
-    assert {:ok, person} = Repo.insert(changeset)
-    assert person.avatar.key == "foo"
-    assert person.avatar.filename == "bar"
+    assert is_binary(upload.key)
+    assert upload.path == @path
+    assert upload.filename == "test.txt"
+    assert upload.content_type == "text/plain"
   end
 end

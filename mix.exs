@@ -49,6 +49,7 @@ defmodule Upload.Mixfile do
     [
       {:ecto, ">= 0.0.0"},
       {:plug, ">= 0.0.0"},
+      {:mime, ">= 0.0.0"},
       {:file_store, ">= 0.0.0", path: "../file_store"},
       {:postgrex, ">= 0.0.0", only: :test},
       {:ecto_sql, ">= 0.0.0", only: :test},

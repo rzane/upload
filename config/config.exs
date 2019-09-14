@@ -12,6 +12,8 @@ config :upload, Upload.Test.Repo,
 
 config :upload, ecto_repos: [Upload.Test.Repo]
 
+config :upload, :file_store, adapter: FileStore.Adapters.Test
+
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
 # file won't be loaded nor affect the parent project. For this reason,
