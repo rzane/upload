@@ -66,10 +66,14 @@ defmodule Upload.Blob do
       |> Changeset.put_change(:checksum, checksum)
     else
       {:error, reason} ->
-        Changeset.add_error(changeset, :base, "upload failed", reason: reason)
+        put_error(changeset, reason)
 
       :error ->
-        Changeset.add_error(changeset, :base, "upload failed", reason: "transfer failed")
+        put_error(changeset, "transfer failed")
     end
+  end
+
+  defp put_error(changeset, reason) do
+    Changeset.add_error(changeset, :base, "upload failed", reason: reason)
   end
 end
