@@ -6,7 +6,7 @@ defmodule Upload.Mixfile do
       app: :upload,
       package: package(),
       version: "0.2.0",
-      elixir: "~> 1.5",
+      elixir: "~> 1.8",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -15,11 +15,17 @@ defmodule Upload.Mixfile do
         plt_add_apps: [:ecto],
         flags: ["-Wunmatched_returns", :error_handling, :race_conditions]
       ],
+      aliases: [
+        "ecto.setup": ["ecto.create", "ecto.migrate"],
+        "ecto.reset": ["ecto.drop", "ecto.setup"]
+      ],
       preferred_cli_env: [
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
-        "coveralls.html": :test
+        "coveralls.html": :test,
+        "ecto.setup": :test,
+        "ecto.reset": :test
       ]
     ]
   end
@@ -49,7 +55,7 @@ defmodule Upload.Mixfile do
     [
       {:ecto, ">= 0.0.0"},
       {:plug, ">= 0.0.0"},
-      {:mime, ">= 0.0.0"},
+      {:mime, "~> 1.2"},
       {:file_store, ">= 0.0.0", path: "../file_store"},
       {:postgrex, ">= 0.0.0", only: :test},
       {:ecto_sql, ">= 0.0.0", only: :test},

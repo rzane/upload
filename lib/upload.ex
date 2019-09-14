@@ -37,7 +37,7 @@ defmodule Upload do
       key: UUID.generate(),
       path: path,
       filename: Path.basename(path),
-      content_type: Mime.from_path(path)
+      content_type: MIME.from_path(path)
     }
   end
 end

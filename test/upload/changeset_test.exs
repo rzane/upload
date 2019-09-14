@@ -15,7 +15,7 @@ defmodule Upload.ChangesetTest do
     changeset = Person.changeset(%Person{}, %{avatar: upload})
 
     assert {:ok, person} = Repo.insert(changeset)
-    assert person.avatar.key == "foo"
-    assert person.avatar.filename == "bar"
+    assert is_binary(person.avatar.key)
+    assert person.avatar.filename == "test.txt"
   end
 end

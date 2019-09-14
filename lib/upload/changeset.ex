@@ -7,7 +7,7 @@ defmodule Upload.Changeset do
 
   @spec cast_upload(Changeset.t(), atom()) :: Changeset.t()
   def cast_upload(changeset, field) do
-    with {:ok, upload} <- Map.fetch(changeset.params, field),
+    with {:ok, upload} <- Map.fetch(changeset.params, to_string(field)),
          {:ok, upload} <- normalize_upload(upload) do
       put_upload(changeset, field, upload)
     else
