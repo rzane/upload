@@ -2,10 +2,11 @@ defmodule Upload.Schema do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @table_name Application.get_env(:upload, :table_name, "uploads")
   @fields [:key, :filename, :content_type, :byte_size, :checksum]
   @required_fields [:key, :filename]
 
-  embedded_schema do
+  schema @table_name do
     field :key, :string
     field :filename, :string
     field :content_type, :string
