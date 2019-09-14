@@ -16,9 +16,13 @@ defmodule Upload do
 
   @spec file_store() :: FileStore.t()
   def file_store() do
-    :upload
-    |> Application.get_env(:file_store, [])
-    |> FileStore.new()
+    case Application.get_env(:upload, :file_store, []) do
+      {module, function_name} ->
+        apply(module, function_name, [])
+
+      config ->
+        FileStore.new(config)
+    end
   end
 
   @spec from_path(Plug.Upload.t()) :: t()
