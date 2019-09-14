@@ -6,9 +6,12 @@ defmodule Upload.Blob do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @type t() :: %__MODULE__{}
+
   @table_name Application.get_env(:upload, :table_name, "upload_blobs")
-  @fields [:key, :filename, :content_type, :byte_size, :checksum]
-  @required_fields [:key, :filename]
+
+  @optional_fields [:content_type, :metadata]
+  @required_fields [:key, :filename, :byte_size, :checksum]
 
   schema @table_name do
     field :key, :string
@@ -20,9 +23,10 @@ defmodule Upload.Blob do
     timestamps(updated_at: false)
   end
 
+  @spec changeset(Upload.Blob.t(), map()) :: Ecto.Changeset.t()
   def changeset(%__MODULE__{} = upload, attrs \\ %{}) do
     upload
-    |> cast(attrs, @fields)
+    |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
   end
 end

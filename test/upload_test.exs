@@ -1,12 +1,14 @@
 defmodule UploadTest do
   use ExUnit.Case
 
-  @path "test/fixtures/test.txt"
+  @path "/foo/bar.pdf"
+  @filename "bar.pdf"
+  @content_type "application/pdf"
 
   @plug_upload %Plug.Upload{
     path: @path,
-    filename: "test.txt",
-    content_type: "text/plain"
+    filename: @filename,
+    content_type: @content_type
   }
 
   test "from_path/1" do
@@ -14,8 +16,8 @@ defmodule UploadTest do
 
     assert is_binary(upload.key)
     assert upload.path == @path
-    assert upload.filename == "test.txt"
-    assert upload.content_type == "text/plain"
+    assert upload.filename == @filename
+    assert upload.content_type == @content_type
   end
 
   test "from_plug/1" do
@@ -23,7 +25,7 @@ defmodule UploadTest do
 
     assert is_binary(upload.key)
     assert upload.path == @path
-    assert upload.filename == "test.txt"
-    assert upload.content_type == "text/plain"
+    assert upload.filename == @filename
+    assert upload.content_type == @content_type
   end
 end

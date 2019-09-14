@@ -5,13 +5,15 @@ defmodule Upload do
 
   alias Ecto.UUID
 
-  defstruct [:key, :path, :content_type, :filename]
+  defstruct [:key, :path, :content_type, :filename, :byte_size, :checksum]
 
   @type t() :: %__MODULE__{
           key: binary(),
           path: Path.t(),
           filename: binary(),
-          content_type: binary() | nil
+          content_type: binary() | nil,
+          byte_size: non_neg_integer() | nil,
+          checksum: binary() | nil
         }
 
   @spec file_store() :: FileStore.t()

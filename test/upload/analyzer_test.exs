@@ -2,13 +2,13 @@ defmodule Upload.AnalyzerTest do
   use ExUnit.Case
   alias Upload.Analyzer
 
-  @path "test/fixtures/text.txt"
+  @path "test/fixtures/test.txt"
 
-  test "byte_size" do
-    assert {:ok, 9} = Analyzer.byte_size(@path)
-  end
+  test "analyze/1" do
+    upload = Upload.from_path(@path)
 
-  test "checksum" do
-    assert {:ok, "qwggwwi4xbzilwzoeksh1g=="} = Analyzer.checksum(@path)
+    assert {:ok, upload} = Analyzer.analyze(upload)
+    assert upload.byte_size == 9
+    assert upload.checksum == "qwggwwi4xbzilwzoeksh1g=="
   end
 end

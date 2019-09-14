@@ -7,11 +7,8 @@ defmodule Upload.Test.Repo.Migrations.Setup do
       add(:filename, :string, null: false)
       add(:content_type, :string)
       add(:metadata, :map)
-
-      # TODO: make `byte_size` and `checksum` non-nullable
-      add(:byte_size, :integer)
-      add(:checksum, :string)
-
+      add(:byte_size, :integer, null: false)
+      add(:checksum, :string, null: false)
       timestamps(updated_at: false)
     end
 
