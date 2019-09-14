@@ -1,10 +1,11 @@
 defmodule Upload.Test.Person do
   use Ecto.Schema
+
   import Ecto.Changeset
   import Upload.Changeset
 
   schema "people" do
-    embeds_one :avatar, Upload.Schema
+    belongs_to(:avatar, Upload.Schema)
   end
 
   def changeset(person, attrs \\ %{}) do

@@ -16,7 +16,7 @@ defmodule Upload.Schema do
     timestamps(updated_at: false)
   end
 
-  def changeset(upload, attrs \\ %{}) do
+  def changeset(%__MODULE__{} = upload, attrs \\ %{}) do
     upload
     |> cast(attrs, @fields)
     |> validate_required(@required_fields)
