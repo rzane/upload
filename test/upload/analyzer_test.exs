@@ -4,6 +4,7 @@ defmodule Upload.AnalyzerTest do
 
   @path "test/fixtures/test.txt"
   @invalid_path "test/fixtures/does_not_exist.txt"
+  @checksum "416186c16238c416482d6cce7a4b21d6"
 
   test "byte_size/1" do
     assert Analyzer.byte_size(@path) == {:ok, 9}
@@ -14,7 +15,7 @@ defmodule Upload.AnalyzerTest do
   end
 
   test "checksum/1" do
-    assert Analyzer.checksum(@path) == {:ok, "qwggwwi4xbzilwzoeksh1g=="}
+    assert Analyzer.checksum(@path) == {:ok, @checksum}
   end
 
   test "checksum/1 with invalid path" do

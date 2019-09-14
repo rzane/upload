@@ -21,7 +21,7 @@ defmodule Upload.Analyzer do
     stream
     |> Enum.reduce(:crypto.hash_init(:md5), &:crypto.hash_update(&2, &1))
     |> :crypto.hash_final()
-    |> Base.encode64()
+    |> Base.encode16()
     |> String.downcase()
   end
 end
