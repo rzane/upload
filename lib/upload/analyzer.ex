@@ -1,5 +1,22 @@
 defmodule Upload.Analyzer do
+  alias Upload.Analyzer.Image
+  alias Upload.Analyzer.Video
+
   @chunk_size 2_048
+
+  @spec analyze(Path.t(), binary() | nil) :: {:ok, map()} | :error
+  def analyze(path, content_type) do
+    case content_type do
+      "image/" <> _ ->
+        Image.analyze(path)
+
+      "video/" <> _ ->
+        Video.analyze(path)
+
+      _ ->
+        {:ok, %{}}
+    end
+  end
 
   @spec byte_size(Path.t()) :: {:ok, non_neg_integer()} | {:error, File.posix()}
   def byte_size(path) do
