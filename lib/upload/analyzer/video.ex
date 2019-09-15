@@ -2,19 +2,22 @@ if Code.ensure_compiled?(FFprobe) do
   defmodule Upload.Analyzer.Video do
     @moduledoc false
 
-    @spec get_metadata(Path.t()) :: {:ok, map()} | {:error, binary()}
+    require Logger
+
+    @spec get_metadata(Path.t()) :: map()
     def get_metadata(path) do
       case FFprobe.streams(path) do
         {:ok, streams} ->
-          {:ok, streams |> find_video() |> extract_metadata()}
+          streams
+          |> Enum.find(%{}, fn stream -> stream["codec_type"] == "video" end)
+          |> extract_metadata()
+          |> Enum.reject(fn {_, v} -> is_nil(v) end)
+          |> Enum.into(%{})
 
         {:error, reason} ->
-          {:error, "ffprobe failed (reason: #{inspect(reason)})"}
+          Logger.error("Skipping video analysis due to an ffprobe error: #{inspect(reason)}")
+          %{}
       end
-    end
-
-    defp find_video(streams) do
-      Enum.find(streams, %{}, fn stream -> stream["codec_type"] == "video" end)
     end
 
     defp extract_metadata(video) do
@@ -23,13 +26,13 @@ if Code.ensure_compiled?(FFprobe) do
       angle = video |> Map.get("tags", %{}) |> Map.get("rotate") |> to_integer()
       {width, height} = get_dimensions(video, angle, ratio)
 
-      prune(%{
+      %{
         height: height,
         width: width,
         angle: angle,
         duration: duration,
         display_aspect_ratio: ratio
-      })
+      }
     end
 
     defp get_dimensions(video, angle, ratio) do
@@ -49,10 +52,6 @@ if Code.ensure_compiled?(FFprobe) do
 
     defp get_computed_height(width, [numerator, denominator]) do
       width * (to_float(denominator) / numerator)
-    end
-
-    defp prune(values) do
-      values |> Enum.reject(fn {_, v} -> is_nil(v) end) |> Enum.into(%{})
     end
 
     defp to_ratio(ratio) when is_binary(ratio) do
@@ -86,8 +85,12 @@ if Code.ensure_compiled?(FFprobe) do
   end
 else
   defmodule Upload.Analyzer.Video do
+    require Logger
+
+    @spec get_metadata(Path.t()) :: map()
     def get_metadata(_) do
-      {:error, "the ffmpex package is not installed"}
+      Logger.info("Skipping video analysis because the ffmpex package is not installed")
+      %{}
     end
   end
 end

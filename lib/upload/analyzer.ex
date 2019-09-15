@@ -25,21 +25,10 @@ defmodule Upload.Analyzer do
 
   @spec get_metadata(Path.t(), binary() | nil) :: map()
   def get_metadata(path, content_type) do
-    case do_get_metadata(path, content_type) do
-      {:ok, metadata} ->
-        metadata
-
-      {:error, reason} ->
-        Logger.warn("Skipping file analysis failed because #{reason}")
-        %{}
-    end
-  end
-
-  defp do_get_metadata(path, content_type) do
     case content_type do
       "image/" <> _ -> Image.get_metadata(path)
       "video/" <> _ -> Video.get_metadata(path)
-      _ -> {:ok, %{}}
+      _ -> %{}
     end
   end
 end

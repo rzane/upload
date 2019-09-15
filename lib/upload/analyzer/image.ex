@@ -2,23 +2,29 @@ if Code.ensure_compiled?(Mogrify) do
   defmodule Upload.Analyzer.Image do
     @moduledoc false
 
-    @spec get_metadata(Path.t()) :: {:ok, map()} | {:error, binary()}
+    require Logger
+
+    @spec get_metadata(Path.t()) :: map()
     def get_metadata(path) do
       image = path |> Mogrify.open() |> Mogrify.verbose()
-      {:ok, prune(%{height: image.height, width: image.width})}
+
+      %{height: image.height, width: image.width}
+      |> Enum.reject(fn {_, v} -> is_nil(v) end)
+      |> Enum.into(%{})
     rescue
       error ->
-        {:error, "Mogrify failed with error: #{inspect(error)}"}
-    end
-
-    defp prune(values) do
-      values |> Enum.reject(fn {_, v} -> is_nil(v) end) |> Enum.into(%{})
+        Logger.error("Skipping image analysis due to a Mogrify error: #{inspect(error)}")
+        %{}
     end
   end
 else
   defmodule Upload.Analyzer.Image do
+    require Logger
+
+    @spec get_metadata(Path.t()) :: map()
     def get_metadata(_) do
-      {:error, "the mogrify package is not installed"}
+      Logger.info("Skipping image analysis because the mogrify package is not installed")
+      %{}
     end
   end
 end
