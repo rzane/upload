@@ -4,20 +4,6 @@ defmodule Upload.Analyzer do
 
   @chunk_size 2_048
 
-  @spec analyze(Path.t(), binary() | nil) :: {:ok, map()} | :error
-  def analyze(path, content_type) do
-    case content_type do
-      "image/" <> _ ->
-        Image.analyze(path)
-
-      "video/" <> _ ->
-        Video.analyze(path)
-
-      _ ->
-        {:ok, %{}}
-    end
-  end
-
   @spec byte_size(Path.t()) :: {:ok, non_neg_integer()} | {:error, File.posix()}
   def byte_size(path) do
     with {:ok, %File.Stat{size: size}} <- File.stat(path) do
@@ -32,6 +18,20 @@ defmodule Upload.Analyzer do
   rescue
     error in File.Error ->
       {:error, error.reason}
+  end
+
+  @spec metadata(Path.t(), binary() | nil) :: {:ok, map()} | :error
+  def metadata(path, content_type) do
+    case content_type do
+      "image/" <> _ ->
+        Image.analyze(path)
+
+      "video/" <> _ ->
+        Video.analyze(path)
+
+      _ ->
+        {:ok, %{}}
+    end
   end
 
   defp hash_stream(stream) do

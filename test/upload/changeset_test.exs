@@ -5,9 +5,10 @@ defmodule Upload.ChangesetTest do
   alias Upload.Test.Person
   alias FileStore.Adapters.Test, as: Storage
 
-  @path "test/fixtures/test.txt"
-  @filename "test.txt"
-  @content_type "text/plain"
+  @path "test/fixtures/test.png"
+  @filename "test.png"
+  @content_type "image/png"
+  @metadata %{height: 600, width: 600}
   @plug_upload %Plug.Upload{
     path: @path,
     filename: @filename,
@@ -31,6 +32,7 @@ defmodule Upload.ChangesetTest do
     assert person.avatar.checksum
     assert person.avatar.filename == @filename
     assert person.avatar.content_type == @content_type
+    assert person.avatar.metadata == @metadata
     assert person.avatar.key in Storage.list_keys()
   end
 
@@ -44,6 +46,7 @@ defmodule Upload.ChangesetTest do
     assert person.avatar.checksum
     assert person.avatar.filename == @filename
     assert person.avatar.content_type == @content_type
+    assert person.avatar.metadata == @metadata
     assert person.avatar.key in Storage.list_keys()
   end
 end

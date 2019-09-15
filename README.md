@@ -16,8 +16,9 @@ Upload offers the following features:
 
 - [] Base58 encoded keys (24 characters)
 - [] Serve with a Plug
-- [] File analysis
 - [] Image variants
+- [] Replacing files
+- [] Deleting files
 
 ## Installation
 

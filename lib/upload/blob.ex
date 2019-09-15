@@ -56,14 +56,17 @@ defmodule Upload.Blob do
     key = UUID.generate()
     store = Upload.get_file_store()
     path = Changeset.get_change(changeset, :path)
+    content_type = Changeset.get_change(changeset, :content_type)
 
     with {:ok, byte_size} <- Analyzer.byte_size(path),
          {:ok, checksum} <- Analyzer.checksum(path),
+         {:ok, metadata} <- Analyzer.metadata(path, content_type),
          :ok <- FileStore.copy(store, path, key) do
       changeset
       |> Changeset.put_change(:key, key)
       |> Changeset.put_change(:byte_size, byte_size)
       |> Changeset.put_change(:checksum, checksum)
+      |> Changeset.put_change(:metadata, metadata)
     else
       {:error, reason} ->
         put_error(changeset, reason)

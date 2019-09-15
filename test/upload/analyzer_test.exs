@@ -25,16 +25,16 @@ defmodule Upload.AnalyzerTest do
     assert Analyzer.checksum(@bad_path) == {:error, :enoent}
   end
 
-  test "analyze/1 with a text file" do
-    assert Analyzer.analyze(@text_path, "text/plain") == {:ok, %{}}
+  test "metadata/1 with a text file" do
+    assert Analyzer.metadata(@text_path, "text/plain") == {:ok, %{}}
   end
 
-  test "analyze/1 with a png" do
-    assert Analyzer.analyze(@png_path, "image/png") == {:ok, %{height: 600, width: 600}}
+  test "metadata/ with a png" do
+    assert Analyzer.metadata(@png_path, "image/png") == {:ok, %{height: 600, width: 600}}
   end
 
-  test "analyze/1 with a video" do
-    assert {:ok, analysis} = Analyzer.analyze(@mp4_path, "video/mp4")
+  test "metadata/ with a video" do
+    assert {:ok, analysis} = Analyzer.metadata(@mp4_path, "video/mp4")
 
     assert analysis == %{
              height: 240,
