@@ -3,6 +3,8 @@ defmodule Upload.Blob do
   An `Ecto.Schema` that represents an upload in the database.
   """
 
+  require Logger
+
   use Ecto.Schema
 
   alias Ecto.UUID
@@ -11,6 +13,7 @@ defmodule Upload.Blob do
 
   @type t() :: %__MODULE__{}
 
+  @log_level Application.get_env(:upload, :log_level, :info)
   @table_name Application.get_env(:upload, :table_name, "upload_blobs")
 
   @required_fields [:path, :filename]
@@ -62,21 +65,23 @@ defmodule Upload.Blob do
          {:ok, checksum} <- Analyzer.checksum(path),
          {:ok, metadata} <- Analyzer.metadata(path, content_type),
          :ok <- FileStore.copy(store, path, key) do
+      Logger.log(@log_level, "Uploaded file to key: #{key} (checksum: #{checksum})")
+
       changeset
       |> Changeset.put_change(:key, key)
       |> Changeset.put_change(:byte_size, byte_size)
       |> Changeset.put_change(:checksum, checksum)
       |> Changeset.put_change(:metadata, metadata)
     else
-      {:error, reason} ->
-        put_error(changeset, reason)
-
       :error ->
-        put_error(changeset, "transfer failed")
+        put_error(changeset)
+
+      {:error, reason} ->
+        put_error(changeset, reason: reason)
     end
   end
 
-  defp put_error(changeset, reason) do
-    Changeset.add_error(changeset, :base, "upload failed", reason: reason)
+  defp put_error(changeset, opts \\ []) do
+    Changeset.add_error(changeset, :base, "upload failed", opts)
   end
 end
