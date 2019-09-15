@@ -1,15 +1,14 @@
 defmodule Upload.Analyzer.Video do
   @moduledoc false
 
-  @ffprobe "ffprobe"
+  alias Upload.Config
+
   @ffprobe_flags ~w(-print_format json -show_streams -v error)
 
-  @spec analyze(Path.t()) :: {:ok, map()} | :error
-  def analyze(path) do
+  @spec get_metadata(Path.t()) :: {:ok, map()} | {:error, binary()}
+  def get_metadata(path) do
     with {:ok, info} <- ffprobe(path) do
-      info
-      |> get_video()
-      |> extract_metadata()
+      {:ok, info |> get_video() |> extract_metadata()}
     end
   end
 
@@ -19,15 +18,13 @@ defmodule Upload.Analyzer.Video do
     angle = video |> Map.get("tags", %{}) |> Map.get("rotate") |> to_integer()
     {width, height} = get_dimensions(video, angle, ratio)
 
-    analysis = %{
+    prune(%{
       height: height,
       width: width,
       angle: angle,
       duration: duration,
       display_aspect_ratio: ratio
-    }
-
-    {:ok, prune(analysis)}
+    })
   end
 
   defp get_dimensions(video, angle, ratio) do
@@ -56,22 +53,29 @@ defmodule Upload.Analyzer.Video do
   end
 
   defp ffprobe(path) do
-    case System.cmd(@ffprobe, @ffprobe_flags ++ [path]) do
-      {out, 0} ->
-        case Jason.decode(out) do
-          {:ok, data} -> {:ok, data}
-          _error -> :error
-        end
+    __MODULE__
+    |> Config.get(:ffprobe, "ffprobe")
+    |> System.cmd(@ffprobe_flags ++ [path])
+    |> case do
+      {stdout, 0} ->
+        {:ok, Jason.decode!(stdout)}
 
-      _ ->
-        :error
+      {_stdout, code} ->
+        {:error, "ffprobe produced a non-zero exit code (code: #{code})"}
     end
+  rescue
+    error in ErlangError ->
+      case error do
+        %ErlangError{original: :enoent} ->
+          {:error, "ffprobe does not appear to be installed"}
+
+        _ ->
+          reraise(error, __STACKTRACE__)
+      end
   end
 
   defp prune(values) do
-    values
-    |> Enum.reject(fn {_, v} -> is_nil(v) end)
-    |> Enum.into(%{})
+    values |> Enum.reject(fn {_, v} -> is_nil(v) end) |> Enum.into(%{})
   end
 
   defp to_ratio(ratio) when is_binary(ratio) do

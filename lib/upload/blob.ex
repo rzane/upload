@@ -61,27 +61,22 @@ defmodule Upload.Blob do
     path = Changeset.get_change(changeset, :path)
     content_type = Changeset.get_change(changeset, :content_type)
 
-    with {:ok, byte_size} <- Analyzer.byte_size(path),
-         {:ok, checksum} <- Analyzer.checksum(path),
-         {:ok, metadata} <- Analyzer.metadata(path, content_type),
-         :ok <- FileStore.copy(store, path, key) do
-      Logger.log(@log_level, "Uploaded file to key: #{key} (checksum: #{checksum})")
+    byte_size = Analyzer.get_byte_size(path)
+    checksum = Analyzer.get_checksum(path)
+    metadata = Analyzer.get_metadata(path, content_type)
 
-      changeset
-      |> Changeset.put_change(:key, key)
-      |> Changeset.put_change(:byte_size, byte_size)
-      |> Changeset.put_change(:checksum, checksum)
-      |> Changeset.put_change(:metadata, metadata)
-    else
+    case FileStore.copy(store, path, key) do
+      :ok ->
+        Logger.log(@log_level, "Uploaded file to key: #{key} (checksum: #{checksum})")
+
+        changeset
+        |> Changeset.put_change(:key, key)
+        |> Changeset.put_change(:byte_size, byte_size)
+        |> Changeset.put_change(:checksum, checksum)
+        |> Changeset.put_change(:metadata, metadata)
+
       :error ->
-        put_error(changeset)
-
-      {:error, reason} ->
-        put_error(changeset, reason: reason)
+        Changeset.add_error(changeset, :base, "upload failed")
     end
-  end
-
-  defp put_error(changeset, opts \\ []) do
-    Changeset.add_error(changeset, :base, "upload failed", opts)
   end
 end
