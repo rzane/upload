@@ -1,30 +1,38 @@
 defmodule Upload.Analyzer.Video do
   @moduledoc false
 
+  @ffprobe "ffprobe"
+  @ffprobe_flags ~w(-print_format json -show_streams -v error)
+
   @spec analyze(Path.t()) :: {:ok, map()} | :error
   def analyze(path) do
     with {:ok, info} <- ffprobe(path) do
-      stream = get_video_stream(info)
-      duration = stream |> Map.get("duration") |> to_float()
-      ratio = stream |> Map.get("display_aspect_ratio") |> to_ratio()
-      angle = stream |> Map.get("tags", %{}) |> Map.get("rotate") |> to_integer()
-      {width, height} = get_dimensions(stream, angle, ratio)
-
-      analysis = %{
-        height: height,
-        width: width,
-        angle: angle,
-        duration: duration,
-        display_aspect_ratio: ratio
-      }
-
-      {:ok, prune(analysis)}
+      info
+      |> get_video()
+      |> extract_metadata()
     end
   end
 
-  defp get_dimensions(stream, angle, ratio) do
-    encoded_width = stream |> Map.get("width") |> to_float()
-    encoded_height = stream |> Map.get("height") |> to_float()
+  defp extract_metadata(video) do
+    duration = video |> Map.get("duration") |> to_float()
+    ratio = video |> Map.get("display_aspect_ratio") |> to_ratio()
+    angle = video |> Map.get("tags", %{}) |> Map.get("rotate") |> to_integer()
+    {width, height} = get_dimensions(video, angle, ratio)
+
+    analysis = %{
+      height: height,
+      width: width,
+      angle: angle,
+      duration: duration,
+      display_aspect_ratio: ratio
+    }
+
+    {:ok, prune(analysis)}
+  end
+
+  defp get_dimensions(video, angle, ratio) do
+    encoded_width = video |> Map.get("width") |> to_float()
+    encoded_height = video |> Map.get("height") |> to_float()
     computed_height = get_computed_height(encoded_width, ratio)
 
     if angle in [90, 270] do
@@ -41,14 +49,14 @@ defmodule Upload.Analyzer.Video do
     width * (to_float(denominator) / numerator)
   end
 
-  defp get_video_stream(info) do
+  defp get_video(info) do
     info
     |> Map.get("streams", [])
     |> Enum.find(%{}, fn stream -> stream["codec_type"] == "video" end)
   end
 
   defp ffprobe(path) do
-    case System.cmd("ffprobe", ["-print_format", "json", "-show_streams", "-v", "error", path]) do
+    case System.cmd(@ffprobe, @ffprobe_flags ++ [path]) do
       {out, 0} ->
         case Jason.decode(out) do
           {:ok, data} -> {:ok, data}
