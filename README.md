@@ -14,6 +14,7 @@ Upload offers the following features:
 
 ## TODO
 
+- [] Validate based on extension, byte size, etc.
 - [] Base58 encoded keys (24 characters)
 - [] Serve with a Plug
 - [] Image variants
