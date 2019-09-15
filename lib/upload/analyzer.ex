@@ -30,7 +30,7 @@ defmodule Upload.Analyzer do
         metadata
 
       {:error, reason} ->
-        Logger.warn("Skipping file analysis failed because #{reason}.")
+        Logger.warn("Skipping file analysis failed because #{reason}")
         %{}
     end
   end
