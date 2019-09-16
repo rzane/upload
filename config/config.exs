@@ -4,15 +4,18 @@ use Mix.Config
 
 config :logger, level: :info
 
+config :upload,
+  log_level: :debug,
+  ecto_repos: [Upload.Test.Repo],
+  file_store: [
+    adapter: FileStore.Adapters.Test
+  ]
+
 config :upload, Upload.Test.Repo,
   adapter: Ecto.Adapters.Postgres,
   database: "upload_test",
   pool: Ecto.Adapters.SQL.Sandbox,
   priv: "test/support/"
-
-config :upload, ecto_repos: [Upload.Test.Repo]
-
-config :upload, :file_store, adapter: FileStore.Adapters.Test
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
