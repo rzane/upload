@@ -8,7 +8,7 @@ defmodule Upload.Changeset do
       {:ok, %Changeset{} = blob_changeset} ->
         Changeset.put_assoc(changeset, field, blob_changeset)
 
-      {:ok, %Plug.Upload{} = plug_upload} ->
+      {:ok, %{__struct__: Plug.Upload} = plug_upload} ->
         Changeset.put_assoc(
           changeset,
           field,

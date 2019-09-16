@@ -29,8 +29,8 @@ defmodule Upload.Blob do
     timestamps(updated_at: false)
   end
 
-  @spec from_plug(Plug.Upload.t()) :: Changeset.t()
-  def from_plug(%Plug.Upload{} = upload) do
+  @spec from_plug(%{__struct__: Plug.Upload}) :: Changeset.t()
+  def from_plug(%{__struct__: Plug.Upload} = upload) do
     changeset(%__MODULE__{}, Map.from_struct(upload))
   end
 

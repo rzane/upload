@@ -54,12 +54,12 @@ defmodule Upload.Mixfile do
   defp deps do
     [
       {:ecto, ">= 0.0.0"},
-      {:plug, ">= 0.0.0"},
       {:mime, "~> 1.2"},
       {:jason, ">= 0.0.0"},
       {:mogrify, "~> 0.7.3", optional: true},
       {:ffmpex, "~> 0.7.0", optional: true},
       {:file_store, ">= 0.0.0", path: "../file_store"},
+      {:plug, ">= 0.0.0", only: :test},
       {:postgrex, ">= 0.0.0", only: :test},
       {:ecto_sql, ">= 0.0.0", only: :test},
       {:excoveralls, "~> 0.7", only: :test},
