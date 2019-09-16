@@ -9,7 +9,8 @@ defmodule Upload.Blob do
 
   alias Ecto.UUID
   alias Ecto.Changeset
-  alias Upload.Analyzer
+  alias Upload.Analyzer.Image
+  alias Upload.Analyzer.Video
 
   @type t() :: %__MODULE__{}
 
@@ -56,16 +57,17 @@ defmodule Upload.Blob do
   end
 
   defp perform_upload(changeset) do
-    key = UUID.generate()
-    store = Upload.get_file_store()
     path = Changeset.get_change(changeset, :path)
     content_type = Changeset.get_change(changeset, :content_type)
 
-    byte_size = Analyzer.get_byte_size(path)
-    checksum = Analyzer.get_checksum(path)
-    metadata = Analyzer.get_metadata(path, content_type)
+    key = UUID.generate()
+    byte_size = get_byte_size(path)
+    checksum = get_checksum(path)
+    metadata = get_metadata(path, content_type)
 
-    case FileStore.copy(store, path, key) do
+    Upload.get_file_store()
+    |> FileStore.copy(path, key)
+    |> case do
       :ok ->
         Logger.log(@log_level, "Uploaded file to key: #{key} (checksum: #{checksum})")
 
@@ -77,6 +79,29 @@ defmodule Upload.Blob do
 
       :error ->
         Changeset.add_error(changeset, :base, "upload failed")
+    end
+  end
+
+  defp get_byte_size(path) do
+    path
+    |> File.stat!()
+    |> Map.fetch!(:size)
+  end
+
+  defp get_checksum(path) do
+    path
+    |> File.stream!([], 2_048)
+    |> Enum.reduce(:crypto.hash_init(:md5), &:crypto.hash_update(&2, &1))
+    |> :crypto.hash_final()
+    |> Base.encode16()
+    |> String.downcase()
+  end
+
+  defp get_metadata(path, content_type) do
+    case content_type do
+      "image/" <> _ -> Image.get_metadata(path)
+      "video/" <> _ -> Video.get_metadata(path)
+      _ -> %{}
     end
   end
 end
