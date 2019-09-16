@@ -28,6 +28,10 @@ defmodule Upload.Key do
     end
   end
 
+  defp get_secret(purpose) do
+    KeyGenerator.generate(Config.secret(), to_string(purpose))
+  end
+
   defp hexdigest(data) do
     :sha256 |> :crypto.hash(data) |> Base.encode16() |> String.downcase()
   end
@@ -37,14 +41,12 @@ defmodule Upload.Key do
     length
     |> :crypto.strong_rand_bytes()
     |> :binary.bin_to_list()
-    |> Enum.map_join(fn byte ->
-      index = rem(byte, 64)
-      index = if index >= 36, do: :random.uniform(36) - 1, else: index
-      <<Enum.at(@base36_alphabet, index)>>
-    end)
+    |> Enum.map_join(fn byte -> byte |> rem(64) |> base36() end)
   end
 
-  defp get_secret(purpose) do
-    KeyGenerator.generate(Config.secret(), to_string(purpose))
+  for {digit, index} <- Enum.with_index(@base36_alphabet) do
+    defp base36(unquote(index)), do: <<unquote(digit)>>
   end
+
+  defp base36(_), do: base36(:random.uniform(36) - 1)
 end
