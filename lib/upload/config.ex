@@ -1,4 +1,6 @@
 defmodule Upload.Config do
+  @moduledoc false
+
   @spec table_name() :: binary()
   def table_name do
     Application.get_env(:upload, :table_name, "upload_blobs")
