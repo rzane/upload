@@ -6,6 +6,7 @@ config :logger, level: :info
 
 config :upload,
   log_level: :debug,
+  secret: "secret",
   ecto_repos: [Upload.Test.Repo],
   file_store: [
     adapter: FileStore.Adapters.Test

@@ -55,6 +55,7 @@ defmodule Upload.Mixfile do
     [
       {:ecto, ">= 0.0.0"},
       {:mime, "~> 1.2"},
+      {:joken, "~> 2.0"},
       {:mogrify, "~> 0.7.3", optional: true},
       {:ffmpex, "~> 0.7.0", optional: true},
       {:file_store, ">= 0.0.0", path: "../file_store"},

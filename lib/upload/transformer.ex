@@ -1,9 +1,9 @@
 defmodule Upload.Transformer do
   # TODO: Check for Mogrify
 
-  def transform(path, transformations) do
+  def transform(path, transforms) do
     image =
-      transformations
+      transforms
       |> Enum.reduce(Mogrify.open(path), &do_transform/2)
       |> Mogrify.save()
 
