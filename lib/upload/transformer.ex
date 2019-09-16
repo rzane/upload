@@ -1,5 +1,7 @@
 defmodule Upload.Transformer do
   # TODO: Check for Mogrify
+  # TODO: If the list of transforms is empty, the transformer should short circuit.
+  # TODO: Handle errors
 
   def transform(path, transforms) do
     image =

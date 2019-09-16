@@ -4,7 +4,7 @@ defmodule Upload.TransformerTest do
 
   @png_path "test/fixtures/test.png"
 
-  test "apply/2" do
+  test "transform/2" do
     assert {:ok, path} = Transformer.transform(@png_path, %{"resize" => "50x50"})
     assert File.regular?(path)
     assert get_dimensions(path) == {50, 50}
