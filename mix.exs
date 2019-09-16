@@ -55,10 +55,10 @@ defmodule Upload.Mixfile do
     [
       {:ecto, ">= 0.0.0"},
       {:mime, "~> 1.2"},
-      {:joken, "~> 2.0"},
+      {:plug_crypto, "~> 1.0"},
+      {:file_store, ">= 0.0.0", path: "../file_store"},
       {:mogrify, "~> 0.7.3", optional: true},
       {:ffmpex, "~> 0.7.0", optional: true},
-      {:file_store, ">= 0.0.0", path: "../file_store"},
       {:plug, ">= 0.0.0", only: :test},
       {:postgrex, ">= 0.0.0", only: :test},
       {:ecto_sql, ">= 0.0.0", only: :test},

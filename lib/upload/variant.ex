@@ -16,7 +16,7 @@ defmodule Upload.Variant do
 
   @spec decode(Blob.t(), binary()) :: {:ok, t()} | {:error, atom() | Keyword.t()}
   def decode(%Blob{} = blob, variation) when is_binary(variation) do
-    with {:ok, transforms} <- Key.decode(variation) do
+    with {:ok, transforms} <- Key.verify(variation, :variation) do
       variant = %__MODULE__{
         blob: blob,
         transforms: transforms,

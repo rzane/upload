@@ -1,6 +1,9 @@
 defmodule Upload.Key do
   alias Upload.Config
 
+  alias Plug.Crypto.KeyGenerator
+  alias Plug.Crypto.MessageVerifier
+
   @base36_alphabet '0123456789abcdefghijklmnopqrstuvwxyz'
 
   @spec generate() :: binary
@@ -11,18 +14,18 @@ defmodule Upload.Key do
     "variants/#{key}/#{hexdigest(variation)}"
   end
 
-  @spec encode(map()) :: binary()
-  def encode(transforms) do
-    Joken.generate_and_sign!(%{}, transforms, token_signer())
+  @spec sign(map(), atom()) :: binary()
+  def sign(data, purpose) do
+    data
+    |> :erlang.term_to_binary()
+    |> MessageVerifier.sign(get_secret(purpose))
   end
 
-  @spec decode(binary()) :: {:ok, map()} | {:error, Joken.error_reason()}
-  def decode(token) do
-    Joken.verify_and_validate(%{}, token, token_signer())
-  end
-
-  defp token_signer do
-    Joken.Signer.create("HS256", Config.secret())
+  @spec verify(binary(), atom()) :: {:ok, map()} | :error
+  def verify(token, purpose) do
+    with {:ok, message} <- MessageVerifier.verify(token, get_secret(purpose)) do
+      {:ok, Plug.Crypto.safe_binary_to_term(message)}
+    end
   end
 
   defp hexdigest(data) do
@@ -39,5 +42,9 @@ defmodule Upload.Key do
       index = if index >= 36, do: :random.uniform(36) - 1, else: index
       <<Enum.at(@base36_alphabet, index)>>
     end)
+  end
+
+  defp get_secret(purpose) do
+    KeyGenerator.generate(Config.secret(), to_string(purpose))
   end
 end

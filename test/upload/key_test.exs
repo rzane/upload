@@ -17,11 +17,11 @@ defmodule Upload.KeyTest do
     end
   end
 
-  describe "encode/1 and decode/1" do
-    test "generates a signed token" do
+  describe "sign/2 and verify/2" do
+    test "saves data in a token" do
       data = %{"foo" => "bar"}
-      token = Key.encode(data)
-      assert Key.decode(token) == {:ok, data}
+      token = Key.sign(data, :variation)
+      assert Key.verify(token, :variation) == {:ok, data}
     end
   end
 end
