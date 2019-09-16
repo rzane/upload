@@ -9,18 +9,16 @@ defmodule Upload.Blob do
 
   alias Ecto.UUID
   alias Ecto.Changeset
+  alias Upload.Config
   alias Upload.Analyzer.Image
   alias Upload.Analyzer.Video
 
   @type t() :: %__MODULE__{}
 
-  @log_level Application.get_env(:upload, :log_level, :info)
-  @table_name Application.get_env(:upload, :table_name, "upload_blobs")
-
   @required_fields [:path, :filename]
   @optional_fields [:content_type]
 
-  schema @table_name do
+  schema Config.table_name() do
     field :key, :string
     field :filename, :string
     field :content_type, :string
@@ -33,13 +31,13 @@ defmodule Upload.Blob do
 
   @spec from_plug(Plug.Upload.t()) :: Changeset.t()
   def from_plug(%Plug.Upload{} = upload) do
-    changeset(%Upload.Blob{}, Map.from_struct(upload))
+    changeset(%__MODULE__{}, Map.from_struct(upload))
   end
 
   @spec from_path(Path.t()) :: Changeset.t()
   def from_path(path) do
     changeset(
-      %Upload.Blob{},
+      %__MODULE__{},
       %{
         path: path,
         filename: Path.basename(path),
@@ -65,11 +63,11 @@ defmodule Upload.Blob do
     checksum = get_checksum(path)
     metadata = get_metadata(path, content_type)
 
-    Upload.get_file_store()
+    Config.file_store()
     |> FileStore.copy(path, key)
     |> case do
       :ok ->
-        Logger.log(@log_level, "Uploaded file to key: #{key} (checksum: #{checksum})")
+        log("Uploaded file to key: #{key} (checksum: #{checksum})")
 
         changeset
         |> Changeset.put_change(:key, key)
@@ -103,5 +101,9 @@ defmodule Upload.Blob do
       "video/" <> _ -> Video.get_metadata(path)
       _ -> %{}
     end
+  end
+
+  defp log(message) do
+    Logger.log(Config.log_level(), message)
   end
 end
