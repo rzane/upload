@@ -1,22 +1,22 @@
 if Code.ensure_compiled?(FFprobe) do
   defmodule Upload.Analyzer.Video do
-    @moduledoc false
+    use Upload.Analyzer
 
-    require Logger
-
-    @spec get_metadata(Path.t()) :: map()
-    def get_metadata(path) do
+    @impl true
+    def get_metadata(path, _) do
       case FFprobe.streams(path) do
         {:ok, streams} ->
-          streams
-          |> Enum.find(%{}, fn stream -> stream["codec_type"] == "video" end)
-          |> extract_metadata()
-          |> Enum.reject(fn {_, v} -> is_nil(v) end)
-          |> Enum.into(%{})
+          metadata =
+            streams
+            |> Enum.find(%{}, fn stream -> stream["codec_type"] == "video" end)
+            |> extract_metadata()
+            |> Enum.reject(fn {_, v} -> is_nil(v) end)
+            |> Enum.into(%{})
+
+          {:ok, metadata}
 
         {:error, reason} ->
-          Logger.error("Skipping video analysis due to an ffprobe error: #{inspect(reason)}")
-          %{}
+          {:error, "Skipping video analysis due to an ffprobe error: #{inspect(reason)}"}
       end
     end
 
@@ -85,12 +85,11 @@ if Code.ensure_compiled?(FFprobe) do
   end
 else
   defmodule Upload.Analyzer.Video do
-    require Logger
+    use Upload.Analyzer
 
-    @spec get_metadata(Path.t()) :: map()
-    def get_metadata(_) do
-      Logger.info("Skipping video analysis because the ffmpex package is not installed")
-      %{}
+    @impl true
+    def get_metadata(_, _) do
+      {:info, "Skipping video analysis because ffmpex is not installed"}
     end
   end
 end

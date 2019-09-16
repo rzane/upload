@@ -96,10 +96,23 @@ defmodule Upload.Blob do
   end
 
   defp get_metadata(path, content_type) do
+    case do_get_metadata(path, content_type) do
+      {:ok, metadata} ->
+        metadata
+
+      {:info, message} ->
+        log(message)
+
+      {:error, message} ->
+        Logger.error(message)
+    end
+  end
+
+  defp do_get_metadata(path, content_type) do
     case content_type do
-      "image/" <> _ -> Image.get_metadata(path)
-      "video/" <> _ -> Video.get_metadata(path)
-      _ -> %{}
+      "image/" <> _ -> Image.get_metadata(path, content_type)
+      "video/" <> _ -> Video.get_metadata(path, content_type)
+      _ -> {:ok, %{}}
     end
   end
 
