@@ -7,9 +7,9 @@ defmodule Upload.Blob do
 
   use Ecto.Schema
 
-  alias Ecto.UUID
   alias Ecto.Changeset
   alias Upload.Config
+  alias Upload.Key
   alias Upload.Analyzer.Image
   alias Upload.Analyzer.Video
 
@@ -58,7 +58,7 @@ defmodule Upload.Blob do
     path = Changeset.get_change(changeset, :path)
     content_type = Changeset.get_change(changeset, :content_type)
 
-    key = UUID.generate()
+    key = Key.generate()
     byte_size = get_byte_size(path)
     checksum = get_checksum(path)
     metadata = get_metadata(path, content_type)

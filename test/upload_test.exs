@@ -82,6 +82,7 @@ defmodule UploadTest do
 
   defp assert_blob(%Blob{} = blob, expected) do
     assert blob.id
+    assert blob.key =~ ~r/^[a-z0-9]{28}$/
     assert blob.key in Storage.list_keys()
     assert blob.filename == expected.filename
     assert blob.content_type == expected.content_type
