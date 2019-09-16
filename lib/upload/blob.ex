@@ -64,7 +64,7 @@ defmodule Upload.Blob do
     metadata = get_metadata(path, content_type)
 
     Config.file_store()
-    |> FileStore.copy(path, key)
+    |> FileStore.upload(path, key)
     |> case do
       :ok ->
         log("Uploaded file to key: #{key} (checksum: #{checksum})")

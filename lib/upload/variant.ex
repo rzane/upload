@@ -6,21 +6,39 @@ defmodule Upload.Variant do
   alias Upload.Config
   alias Upload.Transformer
 
-  defstruct [:blob, :transforms, :key]
+  @enforce_keys [:blob, :transforms, :variation_key, :key]
+  defstruct [:blob, :transforms, :variation_key, :key]
 
   @type t() :: %__MODULE__{
           blob: Blob.t(),
+          key: binary(),
           transforms: map(),
-          key: binary()
+          variation_key: binary()
         }
 
+  @spec new(Blob.t(), map()) :: t()
+  def new(%Blob{} = blob, transforms) do
+    variation_key = Key.sign(transforms, :variation)
+    key = Key.generate_variant(blob.key, variation_key)
+
+    %__MODULE__{
+      blob: blob,
+      key: key,
+      transforms: transforms,
+      variation_key: variation_key
+    }
+  end
+
   @spec decode(Blob.t(), binary()) :: {:ok, t()} | {:error, atom() | Keyword.t()}
-  def decode(%Blob{} = blob, variation) when is_binary(variation) do
-    with {:ok, transforms} <- Key.verify(variation, :variation) do
+  def decode(%Blob{} = blob, variation_key) when is_binary(variation_key) do
+    with {:ok, transforms} <- Key.verify(variation_key, :variation) do
+      key = Key.generate_variant(blob.key, variation_key)
+
       variant = %__MODULE__{
         blob: blob,
+        key: key,
         transforms: transforms,
-        key: Key.generate_variant(blob.key, variation)
+        variation_key: variation_key
       }
 
       {:ok, variant}
@@ -34,48 +52,49 @@ defmodule Upload.Variant do
     else
       with {:ok, blob_path} <- download_blob(blob),
            {:ok, variant_path} <- transform_variant(variant, blob_path),
-           :ok <- remove_file_from_disk(blob_path),
+           :ok <- delete_file_from_disk(blob_path),
            :ok <- upload_variant(variant, variant_path),
-           :ok <- remove_file_from_disk(variant_path),
+           :ok <- delete_file_from_disk(variant_path),
            do: {:ok, variant}
     end
   end
 
   defp upload_variant(%__MODULE__{key: key}, path) do
     Config.file_store()
-    |> FileStore.copy(path, key)
+    |> FileStore.upload(path, key)
     |> case do
       :ok -> :ok
       :error -> {:error, :upload_failed}
     end
   end
 
-  defp transform_variant(%__MODULE__{transforms: transforms}, path) do
-    case Transformer.transform(path, transforms) do
-      {:ok, variant_path} ->
-        {:ok, variant_path}
-
-      _ ->
-        {:error, :transform_failed}
+  defp transform_variant(%__MODULE__{transforms: transforms}, blob_path) do
+    with {:ok, variant_path} <- Plug.Upload.random_file("upload"),
+         :ok <- Transformer.transform(blob_path, variant_path, transforms) do
+      {:ok, variant_path}
+    else
+      _error -> {:error, :transform_failed}
     end
   end
 
-  defp download_blob(%Blob{path: path}) when is_binary(path) do
-    {:ok, path}
+  defp download_blob(%Blob{} = blob) do
+    with {:ok, blob_path} = Plug.Upload.random_file("upload"),
+         :ok <- FileStore.download(Config.file_store(), blob.key, blob_path) do
+      {:ok, blob_path}
+    else
+      _error -> {:error, :download_failed}
+    end
   end
 
-  # TODO: Implement
-  defp download_blob(%Blob{}) do
-    raise "TODO: Implement blob downloads."
+  defp delete_file_from_disk(file) do
+    case File.rm(file) do
+      :ok -> :ok
+      {:error, reason} -> {:error, :remove_file, reason}
+    end
   end
 
   # TODO: Implement
   defp variant_exists?(_variant) do
     false
-  end
-
-  # TODO: Implement
-  defp remove_file_from_disk(_path) do
-    :ok
   end
 end

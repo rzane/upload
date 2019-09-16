@@ -3,13 +3,13 @@ defmodule Upload.Transformer do
   # TODO: If the list of transforms is empty, the transformer should short circuit.
   # TODO: Handle errors
 
-  def transform(path, transforms) do
-    image =
-      transforms
-      |> Enum.reduce(Mogrify.open(path), &do_transform/2)
-      |> Mogrify.save()
+  @spec transform(Path.t(), Path.t(), map()) :: :ok | {:error, binary()}
+  def transform(source, destination, transforms) do
+    transforms
+    |> Enum.reduce(Mogrify.open(source), &do_transform/2)
+    |> Mogrify.save(path: destination)
 
-    {:ok, image.path}
+    :ok
   end
 
   defp do_transform({"resize", param}, image) do
