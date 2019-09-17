@@ -1,6 +1,4 @@
 defmodule Upload.Variant do
-  # TODO: Return better errors
-
   alias Upload.Blob
   alias Upload.Key
   alias Upload.Config
@@ -54,17 +52,21 @@ defmodule Upload.Variant do
 
   @spec process(t()) :: {:ok, t()} | {:error, process_error_reason()}
   def process(%__MODULE__{blob: blob} = variant) do
-    if exists?(variant.key) do
-      {:ok, variant}
-    else
-      with {:ok, blob_path} <- tempfile(),
-           :ok <- download(blob.key, blob_path),
-           {:ok, variant_path} <- tempfile(),
-           :ok <- transform(blob_path, variant_path, variant.transforms),
-           :ok <- cleanup(blob_path),
-           :ok <- upload(variant_path, variant.key),
-           :ok <- cleanup(variant_path),
-           do: {:ok, variant}
+    with {:error, _} <- stat(variant),
+         {:ok, blob_path} <- tempfile(),
+         :ok <- download(blob.key, blob_path),
+         {:ok, variant_path} <- tempfile(),
+         :ok <- transform(blob_path, variant_path, variant.transforms),
+         :ok <- cleanup(blob_path),
+         :ok <- upload(variant_path, variant.key),
+         :ok <- cleanup(variant_path),
+         do: {:ok, variant}
+  end
+
+  defp stat(variant) do
+    case FileStore.stat(Config.file_store(), variant.key) do
+      {:ok, _} -> {:ok, variant}
+      {:error, reason} -> {:error, reason}
     end
   end
 
@@ -102,10 +104,5 @@ defmodule Upload.Variant do
       {reason, _, _} -> {:error, {:tempfile, reason}}
       {reason, _} -> {:error, {:tempfile, reason}}
     end
-  end
-
-  # TODO: Implement
-  defp exists?(_variant) do
-    false
   end
 end
