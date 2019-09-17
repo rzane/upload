@@ -16,6 +16,13 @@ defmodule Upload.Variant do
           variation_key: binary()
         }
 
+  @type process_error_reason() ::
+          {:cleanup, File.posix()}
+          | {:download, term()}
+          | {:transform, term()}
+          | {:upload, term()}
+          | {:tempfile, :no_tmp | :too_many_attempts}
+
   @spec new(Blob.t(), map()) :: t()
   def new(%Blob{} = blob, transforms) do
     variation_key = Key.sign(transforms, :variation)
@@ -45,56 +52,60 @@ defmodule Upload.Variant do
     end
   end
 
-  @spec process(t()) :: {:ok, t()} | {:error, any()}
+  @spec process(t()) :: {:ok, t()} | {:error, process_error_reason()}
   def process(%__MODULE__{blob: blob} = variant) do
-    if variant_exists?(variant) do
+    if exists?(variant.key) do
       {:ok, variant}
     else
-      with {:ok, blob_path} <- download_blob(blob),
-           {:ok, variant_path} <- transform_variant(variant, blob_path),
-           :ok <- delete_file_from_disk(blob_path),
-           :ok <- upload_variant(variant, variant_path),
-           :ok <- delete_file_from_disk(variant_path),
+      with {:ok, blob_path} <- tempfile(),
+           :ok <- download(blob.key, blob_path),
+           {:ok, variant_path} <- tempfile(),
+           :ok <- transform(blob_path, variant_path, variant.transforms),
+           :ok <- cleanup(blob_path),
+           :ok <- upload(variant_path, variant.key),
+           :ok <- cleanup(variant_path),
            do: {:ok, variant}
     end
   end
 
-  defp upload_variant(%__MODULE__{key: key}, path) do
-    Config.file_store()
-    |> FileStore.upload(path, key)
-    |> case do
+  defp download(key, dest) do
+    case FileStore.download(Config.file_store(), key, dest) do
       :ok -> :ok
-      :error -> {:error, :upload_failed}
+      {:error, reason} -> {:error, {:download, reason}}
     end
   end
 
-  defp transform_variant(%__MODULE__{transforms: transforms}, blob_path) do
-    with {:ok, variant_path} <- Plug.Upload.random_file("upload"),
-         :ok <- Transformer.transform(blob_path, variant_path, transforms) do
-      {:ok, variant_path}
-    else
-      _error -> {:error, :transform_failed}
+  defp transform(source, dest, transforms) do
+    case Transformer.transform(source, dest, transforms) do
+      :ok -> :ok
+      {:error, reason} -> {:error, {:transform, reason}}
     end
   end
 
-  defp download_blob(%Blob{} = blob) do
-    with {:ok, blob_path} = Plug.Upload.random_file("upload"),
-         :ok <- FileStore.download(Config.file_store(), blob.key, blob_path) do
-      {:ok, blob_path}
-    else
-      _error -> {:error, :download_failed}
+  defp upload(path, key) do
+    case FileStore.upload(Config.file_store(), path, key) do
+      :ok -> :ok
+      {:error, reason} -> {:error, {:upload, reason}}
     end
   end
 
-  defp delete_file_from_disk(file) do
+  defp cleanup(file) do
     case File.rm(file) do
       :ok -> :ok
-      {:error, reason} -> {:error, :remove_file, reason}
+      {:error, reason} -> {:error, {:cleanup, reason}}
+    end
+  end
+
+  defp tempfile do
+    case Plug.Upload.random_file("upload") do
+      {:ok, tmp} -> {:ok, tmp}
+      {reason, _, _} -> {:error, {:tempfile, reason}}
+      {reason, _} -> {:error, {:tempfile, reason}}
     end
   end
 
   # TODO: Implement
-  defp variant_exists?(_variant) do
+  defp exists?(_variant) do
     false
   end
 end

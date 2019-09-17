@@ -8,13 +8,11 @@ defmodule Upload do
 
   @spec get_public_url(Blob.t(), Keyword.t()) :: binary()
   def get_public_url(%Blob{key: key}, opts \\ []) do
-    Config.file_store()
-    |> FileStore.get_public_url(key, opts)
+    FileStore.get_public_url(Config.file_store(), key, opts)
   end
 
-  @spec get_signed_url(Blob.t(), Keyword.t()) :: {:ok, binary()} | :error
+  @spec get_signed_url(Blob.t(), Keyword.t()) :: {:ok, binary()} | {:error, term()}
   def get_signed_url(%Blob{key: key}, opts \\ []) do
-    Config.file_store()
-    |> FileStore.get_signed_url(key, opts)
+    FileStore.get_signed_url(Config.file_store(), key, opts)
   end
 end

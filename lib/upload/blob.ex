@@ -63,9 +63,7 @@ defmodule Upload.Blob do
     checksum = get_checksum(path)
     metadata = get_metadata(path, content_type)
 
-    Config.file_store()
-    |> FileStore.upload(path, key)
-    |> case do
+    case FileStore.upload(Config.file_store(), path, key) do
       :ok ->
         log("Uploaded file to key: #{key} (checksum: #{checksum})")
 
@@ -75,8 +73,8 @@ defmodule Upload.Blob do
         |> Changeset.put_change(:checksum, checksum)
         |> Changeset.put_change(:metadata, metadata)
 
-      :error ->
-        Changeset.add_error(changeset, :base, "upload failed")
+      {:error, reason} ->
+        Changeset.add_error(changeset, :base, "upload failed", reason: reason)
     end
   end
 
