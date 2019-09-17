@@ -1,17 +1,16 @@
 defmodule Upload.Variant do
-  alias Upload.Blob
   alias Upload.Key
   alias Upload.Config
   alias Upload.Transformer
 
-  @enforce_keys [:blob, :transforms, :variation_key, :key]
-  defstruct [:blob, :transforms, :variation_key, :key]
+  @enforce_keys [:blob_key, :transforms, :variation_key, :key]
+  defstruct [:blob_key, :transforms, :variation_key, :key]
 
   @type t() :: %__MODULE__{
-          blob: Blob.t(),
           key: binary(),
+          blob_key: Key.t(),
+          variation_key: Key.t(),
           transforms: map(),
-          variation_key: binary()
         }
 
   @type process_error_reason() ::
@@ -21,29 +20,29 @@ defmodule Upload.Variant do
           | {:upload, term()}
           | {:tempfile, :no_tmp | :too_many_attempts}
 
-  @spec new(Blob.t(), map()) :: t()
-  def new(%Blob{} = blob, transforms) do
+  @spec new(Key.t(), map()) :: t()
+  def new(blob_key, transforms) do
     variation_key = Key.sign(transforms, :variation)
-    key = Key.generate_variant(blob.key, variation_key)
+    key = Key.generate_variant(blob_key, variation_key)
 
     %__MODULE__{
-      blob: blob,
       key: key,
+      blob_key: blob_key,
       transforms: transforms,
       variation_key: variation_key
     }
   end
 
-  @spec decode(Blob.t(), binary()) :: {:ok, t()} | {:error, atom() | Keyword.t()}
-  def decode(%Blob{} = blob, variation_key) when is_binary(variation_key) do
+  @spec decode(Key.t(), Key.t()) :: {:ok, t()} | {:error, atom() | Keyword.t()}
+  def decode(blob_key, variation_key) do
     with {:ok, transforms} <- Key.verify(variation_key, :variation) do
       key = Key.generate_variant(blob.key, variation_key)
 
       variant = %__MODULE__{
-        blob: blob,
         key: key,
-        transforms: transforms,
-        variation_key: variation_key
+        blob_key: blob_key,
+        variation_key: variation_key,
+        transforms: transforms
       }
 
       {:ok, variant}
@@ -51,10 +50,10 @@ defmodule Upload.Variant do
   end
 
   @spec process(t()) :: {:ok, t()} | {:error, process_error_reason()}
-  def process(%__MODULE__{blob: blob} = variant) do
+  def process(%__MODULE__{blob_key: blob_key} = variant) do
     with {:error, _} <- stat(variant),
          {:ok, blob_path} <- tempfile(),
-         :ok <- download(blob.key, blob_path),
+         :ok <- download(blob_key, blob_path),
          {:ok, variant_path} <- tempfile(),
          :ok <- transform(blob_path, variant_path, variant.transforms),
          :ok <- cleanup(blob_path),

@@ -4,6 +4,8 @@ defmodule Upload.Key do
   alias Plug.Crypto.KeyGenerator
   alias Plug.Crypto.MessageVerifier
 
+  @type t() :: binary()
+
   @base36_alphabet '0123456789abcdefghijklmnopqrstuvwxyz'
 
   @spec generate() :: binary

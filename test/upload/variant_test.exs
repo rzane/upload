@@ -20,14 +20,14 @@ defmodule Upload.VariantTest do
   end
 
   test "decode/2", %{blob: blob, variation: variation} do
-    assert {:ok, variant} = Variant.decode(blob, variation)
-    assert variant.blob == blob
+    assert {:ok, variant} = Variant.decode(blob.key, variation)
+    assert variant.blob_key == blob.key
     assert variant.transforms == @transforms
     assert variant.key == Key.generate_variant(blob.key, variation)
   end
 
   test "process/1", %{blob: blob, variation: variation} do
-    assert {:ok, variant} = Variant.decode(blob, variation)
+    assert {:ok, variant} = Variant.decode(blob.key, variation)
     assert {:ok, ^variant} = Variant.process(variant)
   end
 end
