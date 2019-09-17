@@ -1,6 +1,7 @@
 defmodule ExampleWeb.UserController do
   use ExampleWeb, :controller
 
+  alias Example.Repo
   alias Example.Accounts
   alias Example.Accounts.User
 
@@ -27,7 +28,7 @@ defmodule ExampleWeb.UserController do
   end
 
   def show(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id)
+    user = id |> Accounts.get_user!() |> Repo.preload(:avatar)
     render(conn, "show.html", user: user)
   end
 

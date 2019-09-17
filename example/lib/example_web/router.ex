@@ -18,5 +18,6 @@ defmodule ExampleWeb.Router do
 
     get "/", UserController, :index
     resources "/users", UserController
+    forward "/upload", Storage
   end
 end

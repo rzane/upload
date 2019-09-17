@@ -27,3 +27,4 @@ example-*.tar
 # this depending on your deployment strategy.
 /priv/static/
 /.elixir_ls
+/storage

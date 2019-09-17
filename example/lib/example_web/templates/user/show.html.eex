@@ -1,12 +1,28 @@
 <h1>Show User</h1>
 
 <ul>
-
   <li>
     <strong>Name:</strong>
     <%= @user.name %>
   </li>
 
+  <li>
+    <strong>Thumbnail:</strong>
+    <%= if @user.avatar do %>
+      <%= img_tag variant_path(@user.avatar, resize: "50x50"), alt: "thumnail" %>
+    <% else %>
+      <p>This user does not have an avatar.</p>
+    <% end %>
+  </li>
+
+  <li>
+    <strong>Avatar:</strong>
+    <%= if @user.avatar do %>
+      <%= img_tag blob_path(@user.avatar), alt: "avatar" %>
+    <% else %>
+      <p>This user does not have an avatar</p>
+    <% end %>
+  </li>
 </ul>
 
 <span><%= link "Edit", to: Routes.user_path(@conn, :edit, @user) %></span>
