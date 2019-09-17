@@ -25,7 +25,7 @@ defmodule Upload.Plug.Helpers do
   defp sign_transforms(transforms) do
     transforms
     |> Map.new(fn {k, v} -> {to_string(k), v} end)
-    |> Key.sign(:variation)
+    |> Key.sign(:transform)
   end
 
   defp get_key(%Blob{key: key}), do: key

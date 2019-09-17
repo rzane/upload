@@ -15,19 +15,19 @@ defmodule Upload.VariantTest do
     {:ok, _} = start_supervised(Storage)
 
     blob = @png_path |> Blob.from_path() |> Repo.insert!()
-    variation = Key.sign(@transforms, :variation)
-    [blob: blob, variation: variation]
+    transform_key = Key.sign(@transforms, :transform)
+    [blob: blob, transform_key: transform_key]
   end
 
-  test "decode/2", %{blob: blob, variation: variation} do
-    assert {:ok, variant} = Variant.decode(blob.key, variation)
+  test "decode/2", %{blob: blob, transform_key: transform_key} do
+    assert {:ok, variant} = Variant.decode(blob.key, transform_key)
     assert variant.blob_key == blob.key
     assert variant.transforms == @transforms
-    assert variant.key == Key.generate_variant(blob.key, variation)
+    assert variant.key == Key.generate_variant(blob.key, transform_key)
   end
 
-  test "process/1", %{blob: blob, variation: variation} do
-    assert {:ok, variant} = Variant.decode(blob.key, variation)
+  test "process/1", %{blob: blob, transform_key: transform_key} do
+    assert {:ok, variant} = Variant.decode(blob.key, transform_key)
     assert {:ok, ^variant} = Variant.process(variant)
   end
 end

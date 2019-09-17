@@ -20,8 +20,14 @@ defmodule Upload.KeyTest do
   describe "sign/2 and verify/2" do
     test "saves data in a token" do
       data = %{"foo" => "bar"}
-      token = Key.sign(data, :variation)
-      assert Key.verify(token, :variation) == {:ok, data}
+      token = Key.sign(data, :foo)
+      assert Key.verify(token, :foo) == {:ok, data}
+    end
+
+    test "errors when purpose does not match" do
+      data = %{"foo" => "bar"}
+      token = Key.sign(data, :foo)
+      assert Key.verify(token, :bar) == :error
     end
   end
 end

@@ -27,7 +27,6 @@ if Code.ensure_compiled?(Mogrify) do
   end
 else
   defmodule Upload.Transformer do
-    @spec transform(Path.t(), Path.t(), map()) :: :ok | {:error, term()}
     def transform(_source, _destination, _transforms) do
       raise "Mogrify is not installed"
     end

@@ -43,9 +43,9 @@ defmodule Upload.Endpoint do
 
   # TODO: Rails uses ID for blobs instead of key. Why?
   # TODO: Consider removing `Variant.decode` and just `Key.verify` here.
-  get "/variants/:signed_blob_key/:variation_key/*_filename" do
+  get "/variants/:signed_blob_key/:transform_key/*_filename" do
     with {:ok, blob_key} <- Key.verify(signed_blob_key, :blob),
-         {:ok, variant} <- Variant.decode(blob_key, variation_key),
+         {:ok, variant} <- Variant.decode(blob_key, transform_key),
          {:ok, variant} <- Variant.process(variant),
          {:ok, url} <- Upload.get_signed_url(variant.key) do
       redirect(conn, url)

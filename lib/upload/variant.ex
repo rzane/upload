@@ -3,14 +3,14 @@ defmodule Upload.Variant do
   alias Upload.Config
   alias Upload.Transformer
 
-  @enforce_keys [:blob_key, :transforms, :variation_key, :key]
-  defstruct [:blob_key, :transforms, :variation_key, :key]
+  @enforce_keys [:key, :blob_key, :transforms, :transform_key]
+  defstruct [:key, :blob_key, :transforms, :transform_key]
 
   @type t() :: %__MODULE__{
           key: binary(),
           blob_key: Key.t(),
-          variation_key: Key.t(),
           transforms: map(),
+          transform_key: Key.t()
         }
 
   @type process_error_reason() ::
@@ -22,30 +22,27 @@ defmodule Upload.Variant do
 
   @spec new(Key.t(), map()) :: t()
   def new(blob_key, transforms) do
-    variation_key = Key.sign(transforms, :variation)
-    key = Key.generate_variant(blob_key, variation_key)
+    transform_key = Key.sign(transforms, :transform)
+    key = Key.generate_variant(blob_key, transform_key)
 
     %__MODULE__{
       key: key,
       blob_key: blob_key,
       transforms: transforms,
-      variation_key: variation_key
+      transform_key: transform_key
     }
   end
 
   @spec decode(Key.t(), Key.t()) :: {:ok, t()} | {:error, atom() | Keyword.t()}
-  def decode(blob_key, variation_key) do
-    with {:ok, transforms} <- Key.verify(variation_key, :variation) do
-      key = Key.generate_variant(blob_key, variation_key)
-
-      variant = %__MODULE__{
-        key: key,
-        blob_key: blob_key,
-        variation_key: variation_key,
-        transforms: transforms
-      }
-
-      {:ok, variant}
+  def decode(blob_key, transform_key) do
+    with {:ok, transforms} <- Key.verify(transform_key, :transform) do
+      {:ok,
+       %__MODULE__{
+         key: Key.generate_variant(blob_key, transform_key),
+         blob_key: blob_key,
+         transforms: transforms,
+         transform_key: transform_key
+       }}
     end
   end
 

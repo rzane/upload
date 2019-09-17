@@ -8,15 +8,15 @@ defmodule Upload.Key do
 
   @base36_alphabet '0123456789abcdefghijklmnopqrstuvwxyz'
 
-  @spec generate() :: binary
+  @spec generate() :: t()
   def generate, do: random_base36(28)
 
-  @spec generate_variant(binary(), binary()) :: binary()
-  def generate_variant(key, variation) do
-    "variants/#{key}/#{hexdigest(variation)}"
+  @spec generate_variant(t(), t()) :: t()
+  def generate_variant(blob_key, transform_key) do
+    "variants/#{blob_key}/#{hexdigest(transform_key)}"
   end
 
-  @spec sign(term(), atom()) :: binary()
+  @spec sign(term(), atom()) :: t()
   def sign(data, purpose) do
     data
     |> :erlang.term_to_binary()
