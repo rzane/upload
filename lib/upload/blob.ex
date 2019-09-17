@@ -55,54 +55,39 @@ defmodule Upload.Blob do
   end
 
   defp perform_upload(changeset) do
+    key = Key.generate()
     path = Changeset.get_change(changeset, :path)
     content_type = Changeset.get_change(changeset, :content_type)
 
-    key = Key.generate()
-    byte_size = get_byte_size(path)
-    checksum = get_checksum(path)
-    metadata = get_metadata(path, content_type)
+    with {:ok, %{size: byte_size}} <- File.stat(path),
+         {:ok, checksum} <- FileStore.Stat.compute_checksum(path),
+         {:ok, metadata} <- get_metadata(path, content_type),
+         :ok <- FileStore.upload(Config.file_store(), path, key) do
+      log("Uploaded file to key: #{key} (checksum: #{checksum})")
 
-    case FileStore.upload(Config.file_store(), path, key) do
-      :ok ->
-        log("Uploaded file to key: #{key} (checksum: #{checksum})")
-
-        changeset
-        |> Changeset.put_change(:key, key)
-        |> Changeset.put_change(:byte_size, byte_size)
-        |> Changeset.put_change(:checksum, checksum)
-        |> Changeset.put_change(:metadata, metadata)
-
+      changeset
+      |> Changeset.put_change(:key, key)
+      |> Changeset.put_change(:byte_size, byte_size)
+      |> Changeset.put_change(:checksum, checksum)
+      |> Changeset.put_change(:metadata, metadata)
+    else
       {:error, reason} ->
         Changeset.add_error(changeset, :base, "upload failed", reason: reason)
     end
   end
 
-  defp get_byte_size(path) do
-    path
-    |> File.stat!()
-    |> Map.fetch!(:size)
-  end
-
-  defp get_checksum(path) do
-    path
-    |> File.stream!([], 2_048)
-    |> Enum.reduce(:crypto.hash_init(:md5), &:crypto.hash_update(&2, &1))
-    |> :crypto.hash_final()
-    |> Base.encode16()
-    |> String.downcase()
-  end
-
   defp get_metadata(path, content_type) do
     case do_get_metadata(path, content_type) do
       {:ok, metadata} ->
-        metadata
+        {:ok, metadata}
 
       {:info, message} ->
         log(message)
+        {:ok, %{}}
 
       {:error, message} ->
         Logger.error(message)
+        {:ok, %{}}
     end
   end
 
