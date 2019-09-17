@@ -4,47 +4,12 @@ defmodule Upload.Endpoint do
   require Logger
 
   alias Upload.Key
-  alias Upload.Blob
   alias Upload.Config
   alias Upload.Variant
   alias FileStore.Adapters.Disk
 
   plug(:match)
   plug(:dispatch)
-
-  # TODO: Figure out the actual URL this is mounted at?
-  @spec blob_path(Plug.Conn.t(), Blob.t() | Key.t(), Keyword.t()) :: binary()
-  def blob_path(conn, blob_or_key, query \\ [])
-
-  def blob_path(conn, %Blob{key: key}, query) do
-    blob_path(conn, key, query)
-  end
-
-  def blob_path(_conn, key, query) when is_binary(key) do
-    signed_blob_key = Key.sign(key, :blob)
-    query_string = URI.encode_query(query)
-    "/upload/blobs/#{signed_blob_key}?#{query_string}"
-  end
-
-  # TODO: Figure out the actual URL this is mounted at?
-  @spec variant_path(Plug.Conn.t(), Blob.t() | Key.t(), Keyword.t(), Keyword.t()) :: binary()
-  def variant_path(conn, blob_or_key, transforms, query \\ [])
-
-  def variant_path(conn, %Blob{key: key}, transforms, query) do
-    variant_path(conn, key, transforms, query)
-  end
-
-  def variant_path(_conn, key, transforms, query) when is_binary(key) do
-    query_string = URI.encode_query(query)
-    signed_blob_key = Key.sign(key, :blob)
-
-    variation_key =
-      transforms
-      |> Map.new(fn {k, v} -> {to_string(k), v} end)
-      |> Key.sign(:variation)
-
-    "/upload/variants/#{signed_blob_key}/#{variation_key}?#{query_string}"
-  end
 
   # TODO: Support filename
   # TODO: Use an encoded/signed key?
@@ -61,10 +26,9 @@ defmodule Upload.Endpoint do
     end
   end
 
-  # TODO: Support filename
   # TODO: Disposition query parameter
   # TODO: Rails uses ID for blobs instead of key. Why?
-  get "/blobs/:signed_blob_key/*filename" do
+  get "/blobs/:signed_blob_key/*_filename" do
     with {:ok, blob_key} <- Key.verify(signed_blob_key, :blob),
          {:ok, url} <- Upload.get_signed_url(blob_key) do
       redirect(conn, url)
@@ -77,10 +41,9 @@ defmodule Upload.Endpoint do
     end
   end
 
-  # TODO: Support filename.
   # TODO: Rails uses ID for blobs instead of key. Why?
   # TODO: Consider removing `Variant.decode` and just `Key.verify` here.
-  get "/variants/:signed_blob_key/:variation_key/*filename" do
+  get "/variants/:signed_blob_key/:variation_key/*_filename" do
     with {:ok, blob_key} <- Key.verify(signed_blob_key, :blob),
          {:ok, variant} <- Variant.decode(blob_key, variation_key),
          {:ok, variant} <- Variant.process(variant),

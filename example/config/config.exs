@@ -21,7 +21,7 @@ config :upload,
   secret: "very very secret",
   file_store: [
     adapter: FileStore.Adapters.Disk,
-    base_url: "http://localhost:4000/upload/disk/"
+    base_url: "http://localhost:4000/storage/disk/"
   ]
 
 # Configures Elixir's Logger

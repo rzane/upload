@@ -21,6 +21,6 @@ defmodule ExampleWeb.Router do
   end
 
   scope "/" do
-    forward "/upload", Upload.Endpoint
+    forward "/storage", Upload.Endpoint
   end
 end
