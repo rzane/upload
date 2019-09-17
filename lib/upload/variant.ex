@@ -36,7 +36,7 @@ defmodule Upload.Variant do
   @spec decode(Key.t(), Key.t()) :: {:ok, t()} | {:error, atom() | Keyword.t()}
   def decode(blob_key, variation_key) do
     with {:ok, transforms} <- Key.verify(variation_key, :variation) do
-      key = Key.generate_variant(blob.key, variation_key)
+      key = Key.generate_variant(blob_key, variation_key)
 
       variant = %__MODULE__{
         key: key,

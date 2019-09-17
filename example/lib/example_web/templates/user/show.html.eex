@@ -9,7 +9,7 @@
   <li>
     <strong>Thumbnail:</strong>
     <%= if @user.avatar do %>
-      <%= img_tag variant_path(@user.avatar, resize: "50x50"), alt: "thumnail" %>
+      <%= img_tag Upload.Endpoint.variant_path(@conn, @user.avatar, resize: "50x50"), alt: "thumnail" %>
     <% else %>
       <p>This user does not have an avatar.</p>
     <% end %>
@@ -18,7 +18,7 @@
   <li>
     <strong>Avatar:</strong>
     <%= if @user.avatar do %>
-      <%= img_tag blob_path(@user.avatar), alt: "avatar" %>
+      <%= img_tag Upload.Endpoint.blob_path(@conn, @user.avatar), alt: "avatar" %>
     <% else %>
       <p>This user does not have an avatar</p>
     <% end %>
