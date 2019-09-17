@@ -16,14 +16,14 @@ defmodule Upload.Key do
     "variants/#{key}/#{hexdigest(variation)}"
   end
 
-  @spec sign(map(), atom()) :: binary()
+  @spec sign(term(), atom()) :: binary()
   def sign(data, purpose) do
     data
     |> :erlang.term_to_binary()
     |> MessageVerifier.sign(get_secret(purpose))
   end
 
-  @spec verify(binary(), atom()) :: {:ok, map()} | :error
+  @spec verify(binary(), atom()) :: {:ok, term()} | :error
   def verify(token, purpose) do
     with {:ok, message} <- MessageVerifier.verify(token, get_secret(purpose)) do
       {:ok, Plug.Crypto.safe_binary_to_term(message)}
