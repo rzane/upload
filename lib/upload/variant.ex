@@ -1,6 +1,6 @@
 defmodule Upload.Variant do
   alias Upload.Key
-  alias Upload.Config
+  alias Upload.Storage
   alias Upload.Transformer
 
   @enforce_keys [:key, :blob_key, :transforms, :transform_key]
@@ -60,14 +60,14 @@ defmodule Upload.Variant do
   end
 
   defp stat(variant) do
-    case FileStore.stat(Config.file_store(), variant.key) do
+    case Storage.stat(variant.key) do
       {:ok, _} -> {:ok, variant}
       {:error, reason} -> {:error, reason}
     end
   end
 
   defp download(key, dest) do
-    case FileStore.download(Config.file_store(), key, dest) do
+    case Storage.download(key, dest) do
       :ok -> :ok
       {:error, reason} -> {:error, {:download, reason}}
     end
@@ -81,7 +81,7 @@ defmodule Upload.Variant do
   end
 
   defp upload(path, key) do
-    case FileStore.upload(Config.file_store(), path, key) do
+    case Storage.upload(path, key) do
       :ok -> :ok
       {:error, reason} -> {:error, {:upload, reason}}
     end

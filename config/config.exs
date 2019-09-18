@@ -5,12 +5,11 @@ use Mix.Config
 config :logger, level: :info
 
 config :upload,
-  log_level: :debug,
   secret: "secret",
-  ecto_repos: [Upload.Test.Repo],
-  file_store: [
-    adapter: FileStore.Adapters.Test
-  ]
+  log_level: :debug
+
+config :upload, Upload.Storage,
+  adapter: FileStore.Adapters.Memory
 
 config :upload, Upload.Test.Repo,
   adapter: Ecto.Adapters.Postgres,

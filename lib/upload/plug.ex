@@ -4,8 +4,8 @@ defmodule Upload.Endpoint do
   require Logger
 
   alias Upload.Key
-  alias Upload.Config
   alias Upload.Variant
+  alias Upload.Storage
   alias FileStore.Adapters.Disk
 
   plug(:match)
@@ -15,7 +15,7 @@ defmodule Upload.Endpoint do
   # TODO: Use an encoded/signed key?
   get "/disk/*key" do
     key = Enum.join(key, "/")
-    store = Config.file_store()
+    store = Storage.new()
 
     case Disk.get_path(store, key) do
       {:ok, path} ->

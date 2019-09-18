@@ -10,6 +10,7 @@ defmodule Upload.Blob do
   alias Ecto.Changeset
   alias Upload.Config
   alias Upload.Key
+  alias Upload.Storage
   alias Upload.Analyzer.Image
   alias Upload.Analyzer.Video
 
@@ -60,9 +61,9 @@ defmodule Upload.Blob do
     content_type = Changeset.get_change(changeset, :content_type)
 
     with {:ok, %{size: byte_size}} <- File.stat(path),
-         {:ok, checksum} <- FileStore.Stat.compute_checksum(path),
+         {:ok, checksum} <- FileStore.Stat.checksum_file(path),
          {:ok, metadata} <- get_metadata(path, content_type),
-         :ok <- FileStore.upload(Config.file_store(), path, key) do
+         :ok <- Storage.upload(path, key) do
       log("Uploaded file to key: #{key} (checksum: #{checksum})")
 
       changeset
