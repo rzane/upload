@@ -1,3 +1,3 @@
 defmodule Upload.Storage do
-  use FileStore, otp_app: :upload
+  use FileStore.Config, otp_app: :upload
 end
