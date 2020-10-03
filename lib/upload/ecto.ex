@@ -1,4 +1,4 @@
-if Code.ensure_compiled?(Ecto) do
+if Code.ensure_loaded?(Ecto) do
   defmodule Upload.Ecto do
     @moduledoc """
     Allows Ecto to handle file uploads.

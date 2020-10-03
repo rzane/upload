@@ -1,4 +1,4 @@
-if Code.ensure_compiled?(ExAws.S3) do
+if Code.ensure_loaded?(ExAws.S3) do
   defmodule Upload.Adapters.S3 do
     @moduledoc """
     An `Upload.Adapter` that stores files using Amazon S3.
