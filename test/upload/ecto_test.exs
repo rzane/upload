@@ -53,9 +53,9 @@ defmodule Upload.EctoTest do
       changeset = Company.change()
       changeset = Upload.Ecto.put_upload(changeset, :logo, upload)
 
-      assert Map.size(Adapter.get_uploads()) == 0
+      assert map_size(Adapter.get_uploads()) == 0
       run_prepared_changes(changeset)
-      assert Map.size(Adapter.get_uploads()) == 1
+      assert map_size(Adapter.get_uploads()) == 1
     end
 
     test "assigns the key", %{upload: upload} do

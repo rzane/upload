@@ -12,7 +12,7 @@ defmodule Upload.Adapters.Test do
         assert {:ok, _} = start_supervised(Upload.Adapters.Test)
         assert {:ok, upload} = Upload.cast_path("/path/to/file.txt")
         assert {:ok, upload} = Upload.transfer(upload)
-        assert Map.size(Upload.Adapters.Test.get_uploads()) == 1
+        assert map_size(Upload.Adapters.Test.get_uploads()) == 1
       end
 
   """
