@@ -2,12 +2,6 @@ language: elixir
 
 jobs:
   include:
-    - elixir: "1.5.3"
-      otp_release: "20.3.8"
-    - elixir: "1.6.6"
-      otp_release: "20.3.8"
-    - elixir: "1.7.4"
-      otp_release: "22.3.4"
     - elixir: "1.8.2"
       otp_release: "22.3.4"
     - elixir: "1.9.4"

@@ -6,7 +6,7 @@ defmodule Upload.Mixfile do
       app: :upload,
       package: package(),
       version: "0.2.0",
-      elixir: "~> 1.5",
+      elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
