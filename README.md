@@ -7,10 +7,10 @@ An opinionated file uploader for Elixir projects.
 
 Upload offers the following features:
 
-* Minimal API
-* Reasonable defaults
-* Ecto integration
-* Multiple storage adapters
+- Minimal API
+- Reasonable defaults
+- Ecto integration
+- Multiple storage adapters
 
 ## Installation
 
@@ -99,10 +99,10 @@ plug Plug.Static, at: "/", from: :your_app, gzip: false, only: ~w(uploads)
 
 For now, there are four adapters:
 
-* `Upload.Adapters.Local` - Save files to your local filesystem.
-* `Upload.Adapters.S3` - Save files to Amazon S3.
-* `Upload.Adapters.Fake` - Don't actually save the files at all.
-* `Upload.Adapters.Test` - Keep uploaded files in state, so that you can assert.
+- `Upload.Adapters.Local` - Save files to your local filesystem.
+- `Upload.Adapters.S3` - Save files to Amazon S3.
+- `Upload.Adapters.Fake` - Don't actually save the files at all.
+- `Upload.Adapters.Test` - Keep uploaded files in state, so that you can assert.
 
 ### `Upload.Adapters.Local`
 
@@ -158,3 +158,17 @@ To use this adapter, you'll need the following configuration:
 ```elixir
 config :upload, Upload, adapter: Upload.Adapters.Fake
 ```
+
+## Contributing
+
+First, install the dependencies:
+
+    $ mix deps.get
+
+The tests depend on a "fake" Amazon S3 running locally. If you have Docker installed, you can run:
+
+    $ bin/fake-s3
+
+Then, you can run the test suite:
+
+    $ mix test
