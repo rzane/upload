@@ -18,6 +18,10 @@ jobs:
       - name: Dependencies
         run: mix deps.get
 
+      - name: Set version
+        run: |
+          perl -pi -e "s/version: \"0.0.0\"/version: \"${GITHUB_REF:11}\"/" mix.exs
+
       - name: Publish
         run: mix hex.publish --yes
         env:
