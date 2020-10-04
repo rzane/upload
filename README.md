@@ -1,7 +1,13 @@
-[![Build Status](https://travis-ci.org/rzane/upload.svg?branch=master)](https://travis-ci.org/rzane/upload)
-[![Coverage Status](https://coveralls.io/repos/github/rzane/upload/badge.svg)](https://coveralls.io/github/rzane/upload)
+<h1 align="center">upload</h1>
 
-# Upload
+<div align="center">
+
+![Build](https://github.com/rzane/upload/workflows/Build/badge.svg)
+![Version](https://img.shields.io/hexpm/v/upload)
+![Coverage](https://img.shields.io/coveralls/github/rzane/upload)
+![License](https://img.shields.io/hexpm/l/upload)
+
+</div>
 
 An opinionated file uploader for Elixir projects.
 
@@ -19,7 +25,7 @@ The package can be installed by adding `upload` to your list of dependencies in 
 ```elixir
 def deps do
   [
-    {:upload, "~> 0.1.0"}
+    {:upload, "~> 0.3.0"}
   ]
 end
 ```
