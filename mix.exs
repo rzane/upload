@@ -11,7 +11,7 @@ defmodule Upload.Mixfile do
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
       dialyzer: [
-        plt_add_apps: [:ecto, :ex_aws],
+        plt_add_apps: [:ecto, :ex_aws, :ex_aws_s3],
         flags: ["-Wunmatched_returns", :error_handling, :race_conditions]
       ]
     ]
