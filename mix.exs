@@ -13,12 +13,6 @@ defmodule Upload.Mixfile do
       dialyzer: [
         plt_add_apps: [:ecto, :ex_aws],
         flags: ["-Wunmatched_returns", :error_handling, :race_conditions]
-      ],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.detail": :test,
-        "coveralls.post": :test,
-        "coveralls.html": :test
       ]
     ]
   end
