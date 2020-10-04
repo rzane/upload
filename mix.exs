@@ -12,7 +12,7 @@ defmodule Upload.Mixfile do
       test_coverage: [tool: ExCoveralls],
       dialyzer: [
         plt_add_apps: [:ecto, :ex_aws, :ex_aws_s3],
-        flags: ["-Wunmatched_returns", :error_handling, :race_conditions]
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ]
     ]
   end
@@ -51,7 +51,7 @@ defmodule Upload.Mixfile do
       # Test dependencies for this package
       {:excoveralls, "~> 0.13", only: :test},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false},
-      {:dialyxir, "~> 0.5", only: :dev, runtime: false}
+      {:dialyxir, "~> 1.0", only: :dev, runtime: false}
     ]
   end
 end
