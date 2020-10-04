@@ -1,17 +1,18 @@
 language: elixir
 
 elixir:
-  - '1.5.3'
-  - '1.6.6'
-  - '1.7.4'
-  - '1.8.2'
-  - '1.9.4'
-  - '1.10.4'
+  - "1.5.3"
+  - "1.6.6"
+  - "1.7.4"
+  - "1.8.2"
+  - "1.9.4"
+  - "1.10.4"
 
 services:
   - docker
 
 before_install:
+  - rm mix.lock
   - docker pull lphoward/fake-s3
   - docker run -d -p 4569:4569 lphoward/fake-s3
   - docker ps -a
