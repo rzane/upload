@@ -21,6 +21,6 @@ env:
   - MIX_ENV=test
 
 script:
-  - mix format --check-formatted
   - mix compile --force --warnings-as-errors
+  - mix format --check-formatted
   - mix coveralls.travis
