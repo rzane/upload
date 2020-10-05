@@ -36,14 +36,23 @@ Upload a file:
 
 ```elixir
 {:ok, upload} = Upload.cast_path("/path/to/file.txt")
+```
 
-# Transfer the upload to storage
+Transfer the upload to storage:
+
+```elixir
 {:ok, upload} = Upload.transfer(upload)
+```
 
-# Get the URL for the upload
+Get the URL for the upload:
+
+```elixir
 url = Upload.get_url(upload)
+```
 
-# Get a signed URL for the upload
+Get a signed URL for the upload:
+
+```elixir
 {:ok, signed_url} = Upload.get_signed_url(upload)
 ```
 
