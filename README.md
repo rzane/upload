@@ -41,7 +41,10 @@ Upload a file:
 {:ok, upload} = Upload.transfer(upload)
 
 # Get the URL for the upload
-Upload.get_url(upload)
+url = Upload.get_url(upload)
+
+# Get the URL for the upload
+{:ok, signed_url} = Upload.get_signed_url(upload)
 ```
 
 ### Ecto Integration
