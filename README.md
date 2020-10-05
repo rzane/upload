@@ -43,7 +43,7 @@ Upload a file:
 # Get the URL for the upload
 url = Upload.get_url(upload)
 
-# Get the URL for the upload
+# Get a signed URL for the upload
 {:ok, signed_url} = Upload.get_signed_url(upload)
 ```
 
