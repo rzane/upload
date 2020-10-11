@@ -1,5 +1,8 @@
 defmodule Upload.UploaderTest do
   use ExUnit.Case, async: true
+  alias FileStore.Adapters.Memory, as: Adapter
+
+  @fixture Path.expand("../fixtures/test.txt", __DIR__)
 
   defmodule MyUploader do
     use Upload.Uploader
@@ -8,7 +11,7 @@ defmodule Upload.UploaderTest do
       with {:ok, upload} <- Upload.cast(file, prefix: ["logos"]) do
         extension = Upload.get_extension(upload)
 
-        if Enum.member?(~w(.png), extension) do
+        if extension in ~w(.png) do
           {:ok, upload}
         else
           {:error, "invalid"}
@@ -18,16 +21,16 @@ defmodule Upload.UploaderTest do
   end
 
   setup do
-    {:ok, _} = start_supervised(Upload.Adapters.Test)
+    assert {:ok, _} = start_supervised(Adapter)
     :ok
   end
 
   test "delegates by default" do
-    assert {:ok, upload} = MyUploader.cast_path("/path/to/foo.png")
+    assert {:ok, upload} = MyUploader.cast_path(@fixture)
     assert {:ok, %Upload{}} = MyUploader.transfer(upload)
   end
 
-  test "allows overriding" do
+  test "allows overriding the cast behavior" do
     good = %Plug.Upload{path: "/path/to/foo.png", filename: "foo.png"}
     bad = %Plug.Upload{path: "/path/to/foo.jpg", filename: "foo.jpg"}
 

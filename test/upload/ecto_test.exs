@@ -1,13 +1,11 @@
 defmodule Upload.EctoTest do
   use ExUnit.Case, async: true
-
   import Ecto.Changeset, only: [get_field: 2]
+  alias FileStore.Adapters.Memory, as: Adapter
 
   doctest Upload.Ecto
 
-  alias Upload.Adapters.Test, as: Adapter
-
-  @fixture Path.expand("../fixtures/text.txt", __DIR__)
+  @fixture Path.expand("../fixtures/test.txt", __DIR__)
   @filename ~r"^[a-z0-9]{32}\.txt$"
 
   defmodule Company do
@@ -53,9 +51,9 @@ defmodule Upload.EctoTest do
       changeset = Company.change()
       changeset = Upload.Ecto.put_upload(changeset, :logo, upload)
 
-      assert map_size(Adapter.get_uploads()) == 0
+      assert get_upload_count() == 0
       run_prepared_changes(changeset)
-      assert map_size(Adapter.get_uploads()) == 1
+      assert get_upload_count() == 1
     end
 
     test "assigns the key", %{upload: upload} do
@@ -187,5 +185,9 @@ defmodule Upload.EctoTest do
       changeset = cast_and_upload_any(@fixture)
       assert get_field(changeset, :logo) =~ @filename
     end
+  end
+
+  defp get_upload_count do
+    Enum.count(Upload.Storage.list!())
   end
 end

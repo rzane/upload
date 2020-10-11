@@ -1,5 +1,6 @@
 defmodule UploadTest do
   use ExUnit.Case
+  alias FileStore.Adapters.Memory, as: Adapter
 
   doctest Upload,
     except: [
@@ -11,27 +12,29 @@ defmodule UploadTest do
       cast_path: 2
     ]
 
-  @fixture Path.expand("./fixtures/text.txt", __DIR__)
-  @plug %Plug.Upload{path: @fixture, filename: "text.txt"}
+  @fixture Path.expand("./fixtures/test.txt", __DIR__)
+  @plug %Plug.Upload{path: @fixture, filename: "test.txt"}
 
   test "get_url/1 and transfer/1" do
-    start_supervised(Upload.Adapters.Test)
+    assert {:ok, _} = start_supervised(Adapter)
 
     assert {:ok, upload} = Upload.cast_path(@fixture)
     assert {:ok, upload} = Upload.transfer(upload)
 
-    assert Upload.get_url(upload) == upload.key
-    assert Upload.get_url(upload.key) == upload.key
+    url = "http://example.com/#{upload.key}"
+    assert Upload.get_url(upload) == url
+    assert Upload.get_url(upload.key) == url
   end
 
   test "get_signed_url/2" do
-    start_supervised(Upload.Adapters.Test)
+    assert {:ok, _} = start_supervised(Adapter)
 
     assert {:ok, upload} = Upload.cast_path(@fixture)
     assert {:ok, upload} = Upload.transfer(upload)
 
-    assert Upload.get_signed_url(upload) == {:ok, upload.key}
-    assert Upload.get_signed_url(upload.key) == {:ok, upload.key}
+    url = "http://example.com/#{upload.key}"
+    assert Upload.get_signed_url(upload) == {:ok, url}
+    assert Upload.get_signed_url(upload.key) == {:ok, url}
   end
 
   test "generate_key/1" do
