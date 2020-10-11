@@ -38,18 +38,18 @@ defmodule UploadTest do
   end
 
   test "generate_key/1" do
-    assert Upload.generate_key("phoenix.png") =~ ~r"^[a-z0-9]{32}\.png$"
+    assert Upload.generate_key("phoenix.png") =~ ~r"^[a-z0-9]{28}\.png$"
   end
 
   test "generate_key/2" do
-    assert Upload.generate_key("phoenix.png", prefix: ["logos"]) =~ ~r"^logos/[a-z0-9]{32}\.png$"
+    assert Upload.generate_key("phoenix.png", prefix: ["logos"]) =~ ~r"^logos/[a-z0-9]{28}\.png$"
   end
 
   test "cast/1 with a %Plug.Upload{}" do
     assert {:ok, upload} = Upload.cast(@plug)
     assert upload.path == @plug.path
     assert upload.filename == @plug.filename
-    assert upload.key =~ ~r"^[a-z0-9]{32}\.txt$"
+    assert upload.key =~ ~r"^[a-z0-9]{28}\.txt$"
     assert upload.status == :pending
   end
 
@@ -67,7 +67,7 @@ defmodule UploadTest do
     assert {:ok, upload} = Upload.cast_path(@fixture)
     assert upload.path == @plug.path
     assert upload.filename == @plug.filename
-    assert upload.key =~ ~r"^[a-z0-9]{32}\.txt$"
+    assert upload.key =~ ~r"^[a-z0-9]{28}\.txt$"
     assert upload.status == :pending
   end
 

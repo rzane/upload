@@ -6,7 +6,7 @@ defmodule Upload.EctoTest do
   doctest Upload.Ecto
 
   @fixture Path.expand("../fixtures/test.txt", __DIR__)
-  @filename ~r"^[a-z0-9]{32}\.txt$"
+  @filename ~r"^[a-z0-9]{28}\.txt$"
 
   defmodule Company do
     use Ecto.Schema
@@ -100,7 +100,7 @@ defmodule Upload.EctoTest do
 
     test "casts and assigns a %Plug.Upload{} with :prefix", %{plug_upload: plug_upload} do
       changeset = cast_and_upload(plug_upload, prefix: ["logos"])
-      assert get_field(changeset, :logo) =~ ~r"^logos/[a-z0-9]{32}\.txt$"
+      assert get_field(changeset, :logo) =~ ~r"^logos/[a-z0-9]{28}\.txt$"
     end
 
     test "casts and assigns an %Upload{}", %{upload: upload} do
@@ -141,7 +141,7 @@ defmodule Upload.EctoTest do
 
     test "casts and assigns a path with :prefix" do
       changeset = cast_and_upload_path(@fixture, prefix: ["logos"])
-      assert get_field(changeset, :logo) =~ ~r"^logos/[a-z0-9]{32}\.txt$"
+      assert get_field(changeset, :logo) =~ ~r"^logos/[a-z0-9]{28}\.txt$"
     end
 
     test "casts and assigns an %Upload{}", %{upload: upload} do

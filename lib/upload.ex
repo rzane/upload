@@ -3,6 +3,7 @@ defmodule Upload do
   An opinionated file uploader.
   """
 
+  alias Upload.Key
   alias Upload.Storage
 
   @enforce_keys [:key, :path, :filename]
@@ -156,20 +157,20 @@ defmodule Upload do
   ## Examples
 
       iex> Upload.generate_key("phoenix.png")
-      "b9452178-9a54-5e99-8e64-a059b01b88cf.png"
+      "bfqg6wjkyvi60bf6lwobhjsll5pm.png"
 
       iex> Upload.generate_key("phoenix.png", prefix: ["logos"])
-      "logos/b9452178-9a54-5e99-8e64-a059b01b88cf.png"
+      "logos/bfqg6wjkyvi60bf6lwobhjsll5pm.png"
 
   """
   @spec generate_key(String.t(), [{:prefix, list}]) :: String.t()
   def generate_key(filename, opts \\ []) when is_binary(filename) do
-    uuid = UUID.uuid4(:hex)
+    key = Key.generate()
     ext = get_extension(filename)
 
     opts
     |> Keyword.get(:prefix, [])
-    |> Path.join(uuid <> ext)
+    |> Path.join(key <> ext)
   end
 
   @doc """
