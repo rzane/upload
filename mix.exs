@@ -39,16 +39,12 @@ defmodule Upload.Mixfile do
     [
       {:uuid, "~> 1.1"},
       {:plug, ">= 0.0.0"},
-
-      # S3 Adapter
-      {:ex_aws_s3, "~> 2.0", optional: true},
+      {:file_store, "~> 0.2.0"},
 
       # Ecto integration
       {:ecto, ">= 0.0.0", optional: true},
 
       # Test dependencies for this package
-      {:hackney, ">= 0.0.0", only: :test},
-      {:sweet_xml, ">= 0.0.0", only: :test},
       {:excoveralls, "~> 0.13", only: :test},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false}
