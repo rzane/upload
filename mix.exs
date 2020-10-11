@@ -7,6 +7,7 @@ defmodule Upload.Mixfile do
       package: package(),
       version: "0.0.0",
       elixir: "~> 1.8",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
@@ -34,16 +35,20 @@ defmodule Upload.Mixfile do
     ]
   end
 
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:plug, ">= 0.0.0"},
-      {:file_store, "~> 0.2.0"},
-
-      # Ecto integration
-      {:ecto, ">= 0.0.0", optional: true},
+      {:ecto, "~> 3.0"},
+      {:file_store, "~> 0.2"},
+      {:mime, "~> 1.2"},
+      {:plug, "~> 1.0"},
 
       # Test dependencies for this package
+      {:postgrex, ">= 0.0.0", only: :test},
+      {:ecto_sql, ">= 0.0.0", only: :test},
       {:excoveralls, "~> 0.13", only: :test},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false}

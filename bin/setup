@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -euo pipefail
+
+mix deps.get
+MIX_ENV=test mix do ecto.create, ecto.migrate
