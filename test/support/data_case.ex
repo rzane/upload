@@ -6,7 +6,6 @@ defmodule Upload.DataCase do
 
   using do
     quote do
-      import Ecto.Changeset
       import Upload.DataCase
     end
   end
@@ -15,6 +14,10 @@ defmodule Upload.DataCase do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
     {:ok, _} = start_supervised(Memory)
     :ok
+  end
+
+  def upload_exists?(key) do
+    Enum.member?(Upload.Storage.list!(), key)
   end
 
   def get_upload_count do

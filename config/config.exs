@@ -1,5 +1,7 @@
 use Mix.Config
 
+config :logger, level: :info
+
 config :upload, ecto_repos: [Upload.Test.Repo]
 
 config :upload, Upload.Test.Repo,

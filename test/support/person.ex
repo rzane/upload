@@ -4,7 +4,7 @@ defmodule Upload.Test.Person do
   import Ecto.Changeset
 
   schema "people" do
-    belongs_to(:avatar, Upload.Blob)
+    belongs_to(:avatar, Upload.Blob, on_replace: :delete)
   end
 
   def changeset(person, attrs \\ %{}) do

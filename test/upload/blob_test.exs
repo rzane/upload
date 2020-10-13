@@ -1,49 +1,84 @@
 defmodule Upload.BlobTest do
   use Upload.DataCase
 
+  import Ecto.Changeset
+
   alias Upload.Blob
+  alias Upload.Test.Repo
 
-  @tag :pending
-  test "does not attempt to re-upload files"
+  @path fixture_path("test.txt")
+  @upload %Plug.Upload{
+    path: @path,
+    filename: "test.txt",
+    content_type: "text/plain"
+  }
 
-  @tag :pending
-  test "allows inserting without uploading"
+  describe "from_path/1" do
+    test "builds a changeset" do
+      changeset = Blob.from_path(@path)
+      assert get_change(changeset, :path)
+      assert get_change(changeset, :filename)
+      assert get_change(changeset, :content_type)
+    end
 
-  test "from_path/1" do
-    path = fixture_path("test.txt")
-    changeset = Blob.from_path(path)
-    assert get_change(changeset, :path) == path
-    assert get_change(changeset, :filename) == "test.txt"
-    assert get_change(changeset, :content_type) == "text/plain"
+    test "uploads the file upon insert" do
+      changeset = Blob.from_plug(@upload)
+      assert {:ok, blob} = Repo.insert(changeset)
+      assert blob.key
+      assert blob.path
+      assert blob.content_type
+      assert blob.byte_size
+      assert blob.checksum
+      assert get_upload_count() == 1
+    end
   end
 
-  test "from_plug/1" do
-    path = fixture_path("test.txt")
-    upload = %Plug.Upload{path: path, filename: "test.txt", content_type: "text/plain"}
-    changeset = Blob.from_plug(upload)
-    assert get_change(changeset, :path) == path
-    assert get_change(changeset, :filename) == "test.txt"
-    assert get_change(changeset, :content_type) == "text/plain"
+  describe "from_plug/1" do
+    test "builds a changeset" do
+      changeset = Blob.from_plug(@upload)
+      assert get_change(changeset, :path)
+      assert get_change(changeset, :filename)
+      assert get_change(changeset, :content_type)
+    end
+
+    test "uploads the file upon insert" do
+      changeset = Blob.from_plug(@upload)
+      assert {:ok, blob} = Repo.insert(changeset)
+      assert blob.key
+      assert blob.path
+      assert blob.content_type
+      assert blob.byte_size
+      assert blob.checksum
+      assert get_upload_count() == 1
+    end
   end
 
-  test "perform_upload/1" do
-    path = fixture_path("test.txt")
-    changeset = Blob.from_path(path)
-    changeset = Blob.perform_upload(changeset)
+  describe "changeset/2" do
+    @attributes %{
+      path: @path,
+      key: "abcdef",
+      filename: "text.txt",
+      content_type: "text/plain",
+      byte_size: 9,
+      checksum: "blah"
+    }
 
-    assert changeset.valid?
-    assert get_change(changeset, :key)
-    assert get_change(changeset, :byte_size)
-    assert get_change(changeset, :checksum)
-    assert get_upload_count() == 1
-  end
+    @errors %{
+      key: ["can't be blank"],
+      byte_size: ["can't be blank"],
+      checksum: ["can't be blank"],
+      filename: ["can't be blank"]
+    }
 
-  test "changeset/2" do
-    changeset = Blob.changeset(%Blob{}, %{})
-    refute changeset.valid?
+    test "has required fields" do
+      changeset = Blob.changeset(%Blob{}, %{})
+      assert errors_on(changeset) == @errors
+    end
 
-    errors = errors_on(changeset)
-    assert errors.path == ["can't be blank"]
-    assert errors.filename == ["can't be blank"]
+    test "does not insert the file upon insert" do
+      changeset = Blob.changeset(%Blob{}, @attributes)
+      assert {:ok, _} = Repo.insert(changeset)
+      assert get_upload_count() == 0
+    end
   end
 end

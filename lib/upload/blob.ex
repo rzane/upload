@@ -13,8 +13,11 @@ defmodule Upload.Blob do
 
   @type t() :: %__MODULE__{}
 
-  @required_fields [:path, :filename]
-  @optional_fields [:content_type]
+  @fields ~w(key filename content_type byte_size checksum)a
+  @required_fields ~w(key filename byte_size checksum)a
+
+  @file_fields ~w(path filename content_type)a
+  @required_file_fields ~w(path filename)a
 
   schema Upload.Config.get(__MODULE__, :table_name, "blobs") do
     field :key, :string
@@ -28,31 +31,33 @@ defmodule Upload.Blob do
 
   @spec from_plug(%{__struct__: Plug.Upload}) :: Changeset.t()
   def from_plug(%{__struct__: Plug.Upload} = upload) do
-    changeset(%__MODULE__{}, Map.from_struct(upload))
+    from_file(Map.from_struct(upload))
   end
 
   @spec from_path(Path.t()) :: Changeset.t()
   def from_path(path) do
-    changeset(
-      %__MODULE__{},
-      %{
-        path: path,
-        filename: Path.basename(path),
-        content_type: MIME.from_path(path)
-      }
-    )
+    from_file(%{
+      path: path,
+      filename: Path.basename(path),
+      content_type: MIME.from_path(path)
+    })
+  end
+
+  defp from_file(attrs) do
+    %__MODULE__{}
+    |> Changeset.cast(attrs, @file_fields)
+    |> Changeset.validate_required(@required_file_fields)
+    |> Changeset.prepare_changes(&perform_upload/1)
   end
 
   @spec changeset(t(), map()) :: Changeset.t()
   def changeset(%__MODULE__{} = upload, attrs \\ %{}) do
     upload
-    |> Changeset.cast(attrs, @required_fields ++ @optional_fields)
+    |> Changeset.cast(attrs, @fields)
     |> Changeset.validate_required(@required_fields)
-    |> Changeset.prepare_changes(&perform_upload/1)
   end
 
-  @spec perform_upload(Changeset.t()) :: Changeset.t()
-  def perform_upload(%Changeset{} = changeset) do
+  defp perform_upload(changeset) do
     key = Key.generate()
     path = Changeset.get_change(changeset, :path)
 

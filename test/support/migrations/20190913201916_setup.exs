@@ -15,7 +15,7 @@ defmodule Upload.Test.Repo.Migrations.Setup do
     unique_index(:blobs, :key)
 
     create table(:people) do
-      add(:avatar_id, references(:blobs), null: false)
+      add(:avatar_id, references(:blobs, on_delete: :nilify_all))
     end
   end
 end
