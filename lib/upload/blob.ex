@@ -46,6 +46,7 @@ defmodule Upload.Blob do
     %__MODULE__{}
     |> Changeset.cast(attrs, @file_fields)
     |> Changeset.validate_required(@required_file_fields)
+    |> Changeset.put_change(:key, Key.generate())
     |> Changeset.prepare_changes(&put_byte_size/1)
     |> Changeset.prepare_changes(&put_checksum/1)
   end
