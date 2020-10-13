@@ -3,6 +3,7 @@ defmodule Upload.ChangesetTest do
 
   alias Upload.Test.Repo
   alias Upload.Test.Person
+  alias Upload.Test.ErrorAdapter
 
   test "does nothing when the field is not provided" do
     changeset = change_person(%{})
@@ -66,6 +67,15 @@ defmodule Upload.ChangesetTest do
 
     refute Repo.reload(old_avatar)
     refute upload_exists?(old_avatar.key)
+  end
+
+  test "failure to upload a blob" do
+    set_adapter(ErrorAdapter)
+    upload = build_upload("test.txt")
+    changeset = change_person(%{avatar: upload})
+
+    assert {:error, changeset} = Repo.insert(changeset)
+    assert errors_on(changeset) == %{avatar: %{base: ["is invalid"]}}
   end
 
   defp build_upload(filename) do

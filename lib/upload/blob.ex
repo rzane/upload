@@ -6,8 +6,6 @@ defmodule Upload.Blob do
   use Ecto.Schema
 
   alias Ecto.Changeset
-  alias Upload.Key
-  alias Upload.Storage
   alias Upload.Utils
 
   @type t() :: %__MODULE__{}
@@ -46,7 +44,6 @@ defmodule Upload.Blob do
     %__MODULE__{}
     |> Changeset.cast(attrs, @file_fields)
     |> Changeset.validate_required(@required_file_fields)
-    |> Changeset.prepare_changes(&perform_upload/1)
   end
 
   @spec changeset(t(), map()) :: Changeset.t()
@@ -54,25 +51,5 @@ defmodule Upload.Blob do
     upload
     |> Changeset.cast(attrs, @fields)
     |> Changeset.validate_required(@required_fields)
-  end
-
-  defp perform_upload(changeset) do
-    key = Key.generate()
-    path = Changeset.get_change(changeset, :path)
-
-    with {:ok, %{size: byte_size}} <- File.stat(path),
-         {:ok, checksum} <- FileStore.Stat.checksum_file(path),
-         :ok <- Storage.upload(path, key) do
-      Utils.log(:info, "Uploaded file to key: #{key} (checksum: #{checksum})")
-
-      changeset
-      |> Changeset.put_change(:key, key)
-      |> Changeset.put_change(:byte_size, byte_size)
-      |> Changeset.put_change(:checksum, checksum)
-    else
-      {:error, reason} ->
-        Utils.log(:error, "Uploaded failed (reason: #{reason})")
-        Changeset.add_error(changeset, :base, "upload failed", reason: reason)
-    end
   end
 end

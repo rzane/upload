@@ -11,9 +11,14 @@ defmodule Upload.DataCase do
   end
 
   setup do
+    set_adapter(Memory)
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
     {:ok, _} = start_supervised(Memory)
     :ok
+  end
+
+  def set_adapter(adapter) do
+    Application.put_env(:upload, Upload.Storage, adapter: adapter)
   end
 
   def upload_exists?(key) do
