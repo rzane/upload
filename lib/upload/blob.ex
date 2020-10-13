@@ -7,6 +7,7 @@ defmodule Upload.Blob do
 
   alias Ecto.Changeset
   alias Upload.Utils
+  alias Upload.Key
 
   @type t() :: %__MODULE__{}
 
@@ -34,6 +35,7 @@ defmodule Upload.Blob do
   @spec from_path(Path.t()) :: Changeset.t()
   def from_path(path) do
     from_file(%{
+      key: Key.generate(),
       path: path,
       filename: Path.basename(path),
       content_type: MIME.from_path(path)
@@ -44,6 +46,8 @@ defmodule Upload.Blob do
     %__MODULE__{}
     |> Changeset.cast(attrs, @file_fields)
     |> Changeset.validate_required(@required_file_fields)
+    |> Changeset.prepare_changes(&put_byte_size/1)
+    |> Changeset.prepare_changes(&put_checksum/1)
   end
 
   @spec changeset(t(), map()) :: Changeset.t()
@@ -51,5 +55,29 @@ defmodule Upload.Blob do
     upload
     |> Changeset.cast(attrs, @fields)
     |> Changeset.validate_required(@required_fields)
+  end
+
+  defp put_byte_size(changeset) do
+    path = Changeset.fetch_change!(changeset, :path)
+
+    case File.stat(path) do
+      {:ok, %{size: byte_size}} ->
+        Changeset.put_change(changeset, :byte_size, byte_size)
+
+      {:error, reason} ->
+        Changeset.add_error(changeset, :path, "is invalid", reason: reason)
+    end
+  end
+
+  defp put_checksum(changeset) do
+    path = Changeset.fetch_change!(changeset, :path)
+
+    case FileStore.Stat.checksum_file(path) do
+      {:ok, checksum} ->
+        Changeset.put_change(changeset, :checksum, checksum)
+
+      {:error, reason} ->
+        Changeset.add_error(changeset, :path, "is invalid", reason: reason)
+    end
   end
 end
