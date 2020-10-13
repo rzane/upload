@@ -3,13 +3,12 @@ defmodule Upload.Blob do
   An `Ecto.Schema` that represents an uploaded file in the database.
   """
 
-  require Logger
-
   use Ecto.Schema
 
   alias Ecto.Changeset
   alias Upload.Key
   alias Upload.Storage
+  alias Upload.Utils
 
   @type t() :: %__MODULE__{}
 
@@ -19,7 +18,7 @@ defmodule Upload.Blob do
   @file_fields ~w(path filename content_type)a
   @required_file_fields ~w(path filename)a
 
-  schema Upload.Config.get(__MODULE__, :table_name, "blobs") do
+  schema Utils.get_config(__MODULE__, :table_name, "blobs") do
     field :key, :string
     field :filename, :string
     field :content_type, :string
@@ -64,12 +63,15 @@ defmodule Upload.Blob do
     with {:ok, %{size: byte_size}} <- File.stat(path),
          {:ok, checksum} <- FileStore.Stat.checksum_file(path),
          :ok <- Storage.upload(path, key) do
+      Utils.log(:info, "Uploaded file to key: #{key} (checksum: #{checksum})")
+
       changeset
       |> Changeset.put_change(:key, key)
       |> Changeset.put_change(:byte_size, byte_size)
       |> Changeset.put_change(:checksum, checksum)
     else
       {:error, reason} ->
+        Utils.log(:error, "Uploaded failed (reason: #{reason})")
         Changeset.add_error(changeset, :base, "upload failed", reason: reason)
     end
   end

@@ -2,6 +2,7 @@ defmodule Upload.Changeset do
   alias Ecto.Changeset
   alias Upload.Blob
   alias Upload.Storage
+  alias Upload.Utils
 
   @spec put_attachment(Changeset.t(), atom(), term()) :: Changeset.t()
   def put_attachment(%Changeset{} = changeset, field, value) do
@@ -30,18 +31,19 @@ defmodule Upload.Changeset do
   end
 
   defp purge!(changeset, field) do
-    changeset.data
-    |> Map.get(field)
-    |> do_purge!()
-
+    changeset.data |> Map.get(field) |> do_purge!()
     changeset
   end
 
   defp do_purge!(%Blob{key: key}) when is_binary(key) do
-    with {:error, reason} <- Storage.delete(key) do
-      raise "Failed to delete blob #{key} from storage (reason: #{reason})"
+    case Storage.delete(key) do
+      :ok ->
+        Utils.log(:info, "Deleted file from key: #{key}")
+
+      {:error, reason} ->
+        raise "Failed to delete key: #{key} (reason: #{reason})"
     end
   end
 
-  defp do_purge!(_), do: :ok
+  defp do_purge!(_), do: nil
 end
