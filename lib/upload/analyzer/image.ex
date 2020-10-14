@@ -3,7 +3,8 @@ defmodule Upload.Analyzer.Image do
 
   alias Upload.Utils
 
-  @flags ~w(-format width:%w|height:%h)
+  @flags ~w(-format %w|%h|%[orientation])
+  @rotated ~w(RightTop LeftBottom)
 
   @impl true
   def get_metadata(path) do
@@ -24,7 +25,17 @@ defmodule Upload.Analyzer.Image do
     end
   end
 
-  defp parse(out), do: out |> String.split("|") |> Enum.reduce(%{}, &parse/2)
-  defp parse("width:" <> width, acc), do: Map.put(acc, :width, String.to_integer(width))
-  defp parse("height:" <> height, acc), do: Map.put(acc, :height, String.to_integer(height))
+  defp parse(out) do
+    out
+    |> String.trim()
+    |> String.split("|")
+    |> rotate()
+    |> Enum.map(&String.to_integer/1)
+    |> rzip([:width, :height])
+    |> Enum.into(%{})
+  end
+
+  defp rzip(a, b), do: Enum.zip(b, a)
+  defp rotate([w, h, o]) when o in @rotated, do: [h, w]
+  defp rotate([w, h, _]), do: [w, h]
 end

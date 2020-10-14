@@ -2,26 +2,45 @@ defmodule Upload.Analyzer.ImageTest do
   use ExUnit.Case
   alias Upload.Analyzer.Image
 
-  @png Path.expand("../../fixtures/test.png", __DIR__)
-  @txt Path.expand("../../fixtures/test.txt", __DIR__)
-
   setup do: configure([])
 
-  test "collects image metadata" do
-    assert {:ok, metadata} = Image.get_metadata(@png)
-    assert metadata == %{height: 600, width: 600}
+  test "analyzing a JPEG image" do
+    path = fixture_path("racecar.jpg")
+    assert {:ok, metadata} = Image.get_metadata(path)
+    assert metadata == %{width: 4104, height: 2736}
   end
 
-  test "fails gracefully when `identify` is not installed" do
+  test "analyzing a rotated JPEG image" do
+    path = fixture_path("racecar_rotated.jpg")
+    assert {:ok, metadata} = Image.get_metadata(path)
+    assert metadata == %{width: 2736, height: 4104}
+  end
+
+  test "analyzing an SVG image without an XML declaration" do
+    path = fixture_path("icon.svg")
+    assert {:ok, metadata} = Image.get_metadata(path)
+    assert metadata == %{width: 792, height: 584}
+  end
+
+  test "analyzing an unsupported image type" do
+    path = fixture_path("test.txt")
+    assert {:ok, %{}} = Image.get_metadata(path)
+  end
+
+  test "analyzing when ImageMagick is not installed" do
     configure(identify: [cmd: "command-does-not-exist"])
-    assert {:ok, %{}} = Image.get_metadata(@png)
-  end
 
-  test "fails gracefully when file is not recognizable" do
-    assert {:ok, %{}} = Image.get_metadata(@txt)
+    path = fixture_path("racecar.jpg")
+    assert {:ok, %{}} = Image.get_metadata(path)
   end
 
   defp configure(opts) do
     Application.put_env(:upload, Upload.Analyzer.Image, opts)
+  end
+
+  defp fixture_path(name) do
+    "../../fixtures"
+    |> Path.expand(__DIR__)
+    |> Path.join(name)
   end
 end
