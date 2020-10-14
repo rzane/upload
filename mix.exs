@@ -45,6 +45,7 @@ defmodule Upload.Mixfile do
       {:file_store, "~> 0.2"},
       {:mime, "~> 1.2"},
       {:plug, "~> 1.0"},
+      {:jason, ">= 0.0.0"},
 
       # Test dependencies for this package
       {:postgrex, ">= 0.0.0", only: :test},

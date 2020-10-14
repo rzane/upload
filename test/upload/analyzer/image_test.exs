@@ -7,7 +7,7 @@ defmodule Upload.Analyzer.ImageTest do
 
   setup do: configure([])
 
-  test "collects image dimensions" do
+  test "collects image metadata" do
     assert {:ok, metadata} = Image.get_metadata(@png)
     assert metadata == %{height: 600, width: 600}
   end
