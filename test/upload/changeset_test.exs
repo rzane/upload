@@ -1,99 +1,44 @@
 defmodule Upload.ChangesetTest do
   use Upload.DataCase
 
-  alias Upload.Test.Repo
   alias Upload.Test.Person
-  alias Upload.Test.ErrorAdapter
 
-  @moduletag :pending
+  @path fixture_path("test.txt")
+  @upload %Plug.Upload{filename: "test.txt", path: @path}
 
-  test "does nothing when the field is not provided" do
-    changeset = change_person(%{})
-    assert changeset.valid?
-    assert changeset.errors == []
-    assert changeset.changes == %{}
+  describe "cast_attachment/2" do
+    test "accepts a Plug.Upload" do
+      changeset = change_person(%{avatar: @upload})
+      assert changeset.valid?
+      assert changeset.changes.avatar
+      assert changeset.changes.avatar.action == :insert
+      assert changeset.changes.avatar.changes.key
+      assert changeset.changes.avatar.changes.path
+      assert changeset.changes.avatar.changes.filename
+    end
+
+    test "accepts nil" do
+      changeset = change_person(%{avatar: nil})
+      assert changeset.valid?
+      assert changeset.changes.avatar == nil
+    end
+
+    test "rejects a path" do
+      changeset = change_person(%{avatar: @path})
+      refute changeset.valid?
+      assert changeset.errors == [{:avatar, {"is invalid", []}}]
+    end
+
+    test "rejects invalid values with a custom message" do
+      changeset = change_person(%{avatar: 42}, invalid_message: "boom")
+      refute changeset.valid?
+      assert changeset.errors == [{:avatar, {"boom", []}}]
+    end
   end
 
-  test "attaching a blob to a new record" do
-    upload = build_upload("test.txt")
-    changeset = change_person(%{avatar: upload})
-
-    assert {:ok, person} = Repo.insert(changeset)
-    assert person.avatar_id
-    assert person.avatar.key
-    assert person.avatar.checksum
-    assert person.avatar.byte_size
-    assert person.avatar.filename
-  end
-
-  test "attaching a blob to an existing record" do
-    person = create_person()
-    upload = build_upload("test.txt")
-    changeset = change_person(person, %{avatar: upload})
-
-    assert {:ok, person} = Repo.update(changeset)
-    assert person.avatar_id
-    assert person.avatar.key
-    assert person.avatar.checksum
-    assert person.avatar.byte_size
-    assert person.avatar.filename
-    assert person.avatar.key in list_uploaded_keys()
-  end
-
-  test "removing a blob" do
-    upload = build_upload("test.txt")
-    person = create_person(%{avatar: upload})
-    old_avatar = person.avatar
-
-    changeset = change_person(person, %{avatar: nil})
-    assert {:ok, person} = Repo.update(changeset)
-
-    refute person.avatar_id
-    refute person.avatar
-
-    refute Repo.reload(old_avatar)
-    refute old_avatar.key in list_uploaded_keys()
-  end
-
-  test "replacing a blob" do
-    upload = build_upload("test.txt")
-    person = create_person(%{avatar: upload})
-    old_avatar = person.avatar
-
-    changeset = change_person(person, %{avatar: upload})
-    assert {:ok, person} = Repo.update(changeset)
-
-    assert person.avatar_id
-    assert Repo.reload(person.avatar)
-    assert person.avatar.key in list_uploaded_keys()
-
-    refute Repo.reload(old_avatar)
-    refute old_avatar.key in list_uploaded_keys()
-  end
-
-  test "failure to upload a blob" do
-    set_adapter(ErrorAdapter)
-    upload = build_upload("test.txt")
-    changeset = change_person(%{avatar: upload})
-
-    assert {:error, changeset} = Repo.insert(changeset)
-    assert errors_on(changeset) == %{avatar: %{base: ["is invalid"]}}
-  end
-
-  defp build_upload(filename) do
-    %Plug.Upload{filename: filename, path: fixture_path(filename)}
-  end
-
-  defp create_person(attrs \\ %{}) do
-    attrs
-    |> change_person()
-    |> Repo.insert!()
-    |> Repo.preload(:avatar)
-  end
-
-  defp change_person(person \\ %Person{}, attrs) do
-    person
+  defp change_person(attrs, opts \\ []) do
+    %Person{}
     |> Person.changeset(attrs)
-    |> Upload.Changeset.cast_attachment(:avatar)
+    |> Upload.Changeset.cast_attachment(:avatar, opts)
   end
 end

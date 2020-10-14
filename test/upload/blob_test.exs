@@ -2,6 +2,7 @@ defmodule Upload.BlobTest do
   use Upload.DataCase
 
   alias Upload.Blob
+  alias Upload.Test.Repo
 
   @path fixture_path("test.txt")
   @upload %Plug.Upload{
@@ -13,18 +14,34 @@ defmodule Upload.BlobTest do
   describe "from_path/1" do
     test "builds a changeset" do
       changeset = Blob.from_path(@path)
+      assert changeset.changes.key
       assert changeset.changes.path
       assert changeset.changes.filename
       assert changeset.changes.content_type
+    end
+
+    test "collects file information before being saved" do
+      changeset = Blob.from_path(@path)
+      blob = Repo.insert!(changeset)
+      assert blob.byte_size
+      assert blob.checksum
     end
   end
 
   describe "from_plug/1" do
     test "builds a changeset" do
       changeset = Blob.from_plug(@upload)
+      assert changeset.changes.key
       assert changeset.changes.path
       assert changeset.changes.filename
       assert changeset.changes.content_type
+    end
+
+    test "collects file information before being saved" do
+      changeset = Blob.from_plug(@upload)
+      blob = Repo.insert!(changeset)
+      assert blob.byte_size
+      assert blob.checksum
     end
   end
 
