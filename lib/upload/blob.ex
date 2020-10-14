@@ -9,6 +9,9 @@ defmodule Upload.Blob do
   alias Upload.Utils
   alias Upload.Key
 
+  alias Upload.Analyzer.Image
+  alias Upload.Analyzer.Video
+
   @type t() :: %__MODULE__{}
 
   @fields ~w(key filename content_type byte_size checksum)a
@@ -23,6 +26,7 @@ defmodule Upload.Blob do
     field :content_type, :string
     field :byte_size, :integer
     field :checksum, :string
+    field :metadata, :map
     field :path, :string, virtual: true
     timestamps(updated_at: false)
   end
@@ -47,8 +51,7 @@ defmodule Upload.Blob do
     |> Changeset.cast(attrs, @file_fields)
     |> Changeset.validate_required(@required_file_fields)
     |> Changeset.put_change(:key, Key.generate())
-    |> Changeset.prepare_changes(&put_byte_size/1)
-    |> Changeset.prepare_changes(&put_checksum/1)
+    |> Changeset.prepare_changes(&analyze/1)
   end
 
   @spec changeset(t(), map()) :: Changeset.t()
@@ -58,27 +61,24 @@ defmodule Upload.Blob do
     |> Changeset.validate_required(@required_fields)
   end
 
-  defp put_byte_size(changeset) do
+  defp analyze(changeset) do
     path = Changeset.fetch_change!(changeset, :path)
+    content_type = Changeset.get_change(changeset, :content_type)
 
-    case File.stat(path) do
-      {:ok, %{size: byte_size}} ->
-        Changeset.put_change(changeset, :byte_size, byte_size)
-
+    with {:ok, %{size: byte_size}} <- File.stat(path),
+         {:ok, checksum} <- FileStore.Stat.checksum_file(path),
+         {:ok, metadata} <- get_metadata(path, content_type) do
+      changeset
+      |> Changeset.put_change(:byte_size, byte_size)
+      |> Changeset.put_change(:checksum, checksum)
+      |> Changeset.put_change(:metadata, metadata)
+    else
       {:error, reason} ->
         Changeset.add_error(changeset, :path, "is invalid", reason: reason)
     end
   end
 
-  defp put_checksum(changeset) do
-    path = Changeset.fetch_change!(changeset, :path)
-
-    case FileStore.Stat.checksum_file(path) do
-      {:ok, checksum} ->
-        Changeset.put_change(changeset, :checksum, checksum)
-
-      {:error, reason} ->
-        Changeset.add_error(changeset, :path, "is invalid", reason: reason)
-    end
-  end
+  defp get_metadata(path, "image/" <> _), do: Image.get_metadata(path)
+  defp get_metadata(path, "video/" <> _), do: Video.get_metadata(path)
+  defp get_metadata(_path, _), do: {:ok, %{}}
 end
