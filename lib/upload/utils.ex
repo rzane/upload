@@ -12,4 +12,17 @@ defmodule Upload.Utils do
     |> Application.get_env(name, [])
     |> Keyword.get(key, default)
   end
+
+  def cmd(name, cmd, args) do
+    config = get_config(name, cmd, [])
+    cmd = Keyword.get(config, :cmd, to_string(cmd))
+    args = Keyword.get(config, :args, []) ++ args
+
+    case System.cmd(cmd, args, stderr_to_stdout: true) do
+      {out, 0} -> {:ok, out}
+      {_, status} -> {:error, {:exit, status}}
+    end
+  rescue
+    e in [ErlangError] -> {:error, e.original}
+  end
 end
