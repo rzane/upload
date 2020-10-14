@@ -5,6 +5,8 @@ defmodule Upload.ChangesetTest do
   alias Upload.Test.Person
   alias Upload.Test.ErrorAdapter
 
+  @moduletag :pending
+
   test "does nothing when the field is not provided" do
     changeset = change_person(%{})
     assert changeset.valid?
@@ -35,7 +37,7 @@ defmodule Upload.ChangesetTest do
     assert person.avatar.checksum
     assert person.avatar.byte_size
     assert person.avatar.filename
-    assert upload_exists?(person.avatar.key)
+    assert person.avatar.key in list_uploaded_keys()
   end
 
   test "removing a blob" do
@@ -50,7 +52,7 @@ defmodule Upload.ChangesetTest do
     refute person.avatar
 
     refute Repo.reload(old_avatar)
-    refute upload_exists?(old_avatar.key)
+    refute old_avatar.key in list_uploaded_keys()
   end
 
   test "replacing a blob" do
@@ -63,10 +65,10 @@ defmodule Upload.ChangesetTest do
 
     assert person.avatar_id
     assert Repo.reload(person.avatar)
-    assert upload_exists?(person.avatar.key)
+    assert person.avatar.key in list_uploaded_keys()
 
     refute Repo.reload(old_avatar)
-    refute upload_exists?(old_avatar.key)
+    refute old_avatar.key in list_uploaded_keys()
   end
 
   test "failure to upload a blob" do

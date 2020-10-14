@@ -21,12 +21,8 @@ defmodule Upload.DataCase do
     Application.put_env(:upload, Upload.Storage, adapter: adapter)
   end
 
-  def upload_exists?(key) do
-    Enum.member?(Upload.Storage.list!(), key)
-  end
-
-  def get_upload_count do
-    Enum.count(Upload.Storage.list!())
+  def list_uploaded_keys do
+    Enum.to_list(Upload.Storage.list!())
   end
 
   def fixture_path(name) do
