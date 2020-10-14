@@ -10,9 +10,21 @@ defmodule Upload.Multi do
       multi,
       {name, blob_name},
       fn _repo, %{^name => %{^blob_name => blob}} ->
-        blob |> do_upload() |> to_result()
+        blob
+        |> do_upload()
+        |> to_result()
       end
     )
+  end
+
+  def purge(multi, _name, nil), do: multi
+
+  def purge(multi, name, %Blob{key: key}) do
+    Multi.run(multi, name, fn _, _ ->
+      key
+      |> Storage.delete()
+      |> to_result()
+    end)
   end
 
   defp do_upload(nil), do: :ok
