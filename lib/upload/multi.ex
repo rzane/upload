@@ -22,11 +22,11 @@ defmodule Upload.Multi do
     Multi.run(multi, name, fn _, _ ->
       case Storage.delete(key) do
         :ok ->
-          Utils.log(:info, "Deleted file from key: #{key}")
+          Utils.info("Deleted file from key: #{key}")
           {:ok, nil}
 
         {:error, reason} ->
-          Utils.log(:error, "Failed to delete file from key: #{key}")
+          Utils.error("Failed to delete file from key: #{key}")
           {:error, reason}
       end
     end)
@@ -39,11 +39,11 @@ defmodule Upload.Multi do
   defp do_upload(%Blob{path: path, key: key, checksum: checksum}) do
     case Storage.upload(path, key) do
       :ok ->
-        Utils.log(:info, "Uploaded file to key: #{key} (checksum: #{checksum})")
+        Utils.info("Uploaded file to key: #{key} (checksum: #{checksum})")
         {:ok, nil}
 
       {:error, reason} ->
-        Utils.log(:error, "Failed to load file to key: #{key} (reason: #{inspect(reason)})")
+        Utils.error("Failed to load file to key: #{key} (reason: #{inspect(reason)})")
         {:error, reason}
     end
   end

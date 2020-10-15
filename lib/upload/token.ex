@@ -20,8 +20,6 @@ defmodule Upload.Token do
   end
 
   defp get_secret(salt) do
-    :secret_key
-    |> Utils.fetch_config!()
-    |> KeyGenerator.generate(to_string(salt))
+    KeyGenerator.generate(Utils.secret_key(), to_string(salt))
   end
 end

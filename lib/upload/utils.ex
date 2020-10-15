@@ -1,26 +1,18 @@
 defmodule Upload.Utils do
+  @moduledoc false
+
   require Logger
 
-  def log(level, message) do
-    if get_config(:log, true) do
-      Logger.log(level, message)
-    end
+  def secret_key, do: fetch_config!(:secret_key)
+  def table_name, do: get_config(:table_name, "blobs")
+
+  def json_decode(data) do
+    decoder = get_config(:json_decoder, Jason)
+    decoder.decode(data)
   end
 
-  def fetch_config!(name \\ Upload, key) do
-    :upload
-    |> Application.fetch_env!(name)
-    |> Keyword.fetch!(key)
-  end
-
-  def get_config(name \\ Upload, key, default \\ nil) do
-    :upload
-    |> Application.get_env(name, [])
-    |> Keyword.get(key, default)
-  end
-
-  def cmd(name, cmd, args) do
-    config = get_config(name, cmd, [])
+  def cmd(cmd, args) do
+    config = get_config(cmd, [])
     cmd = Keyword.get(config, :cmd, to_string(cmd))
     args = Keyword.get(config, :args, []) ++ args
 
@@ -30,5 +22,21 @@ defmodule Upload.Utils do
     end
   rescue
     e in [ErlangError] -> {:error, e.original}
+  end
+
+  for level <- [:debug, :warn, :info, :error] do
+    def unquote(level)(message) do
+      if get_config(:log, true) do
+        Logger.log(unquote(level), message)
+      end
+    end
+  end
+
+  defp get_config(key, default) do
+    Application.get_env(:upload, key, default)
+  end
+
+  defp fetch_config!(key) do
+    Application.fetch_env!(:upload, key)
   end
 end

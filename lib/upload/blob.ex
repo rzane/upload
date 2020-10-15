@@ -22,7 +22,7 @@ defmodule Upload.Blob do
   @file_fields ~w(path filename content_type)a
   @required_file_fields ~w(path filename)a
 
-  schema Utils.get_config(__MODULE__, :table_name, "blobs") do
+  schema Utils.table_name() do
     field :key, :string
     field :filename, :string
     field :content_type, :string

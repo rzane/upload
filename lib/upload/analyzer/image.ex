@@ -8,16 +8,16 @@ defmodule Upload.Analyzer.Image do
 
   @impl true
   def get_metadata(path) do
-    case Utils.cmd(__MODULE__, :identify, @flags ++ [path]) do
+    case Utils.cmd(:identify, @flags ++ [path]) do
       {:ok, out} ->
         {:ok, parse(out)}
 
       {:error, :enoent} ->
-        Utils.log(:warn, "Skipping image analysis because ImageMagick is not installed")
+        Utils.warn("Skipping image analysis because ImageMagick is not installed")
         {:ok, %{}}
 
       {:error, {:exit, 1}} ->
-        Utils.log(:warn, "Skipping image analysis because ImageMagick doesn't support the file")
+        Utils.warn("Skipping image analysis because ImageMagick doesn't support the file")
         {:ok, %{}}
 
       {:error, reason} ->

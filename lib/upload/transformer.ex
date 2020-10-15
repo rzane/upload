@@ -5,7 +5,7 @@ defmodule Upload.Transformer do
     args = Enum.reduce(transforms, [], &reduce/2)
     args = args ++ ["-write", destination, source]
 
-    case Utils.cmd(__MODULE__, :mogrify, args) do
+    case Utils.cmd(:mogrify, args) do
       {:ok, _} ->
         :ok
 

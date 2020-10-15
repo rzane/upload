@@ -6,18 +6,16 @@ defmodule Upload.Analyzer.Video do
   @flags ~w(-print_format json -show_streams -show_format -v error)
 
   def get_metadata(path) do
-    json_decoder = Utils.get_config(:json_decoder, Jason)
-
-    with {:ok, out} <- Utils.cmd(__MODULE__, :ffprobe, @flags ++ [path]),
-         {:ok, data} <- json_decoder.decode(out) do
+    with {:ok, out} <- Utils.cmd(:ffprobe, @flags ++ [path]),
+         {:ok, data} <- Utils.json_decode(out) do
       {:ok, extract(data)}
     else
       {:error, :enoent} ->
-        Utils.log(:warn, "Skipping video analysis because FFmpeg is not installed")
+        Utils.warn("Skipping video analysis because FFmpeg is not installed")
         {:ok, %{}}
 
       {:error, {:exit, 1}} ->
-        Utils.log(:warn, "Skipping video analysis because FFmpeg doesn't support the file")
+        Utils.warn("Skipping video analysis because FFmpeg doesn't support the file")
         {:ok, %{}}
 
       {:error, reason} ->

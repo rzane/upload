@@ -37,11 +37,11 @@ defmodule Upload.Variant do
   defp stat(key) do
     case Storage.stat(key) do
       {:ok, _} ->
-        Utils.log(:debug, "Check if file exists at key: #{key} (yes)")
+        Utils.debug("Check if file exists at key: #{key} (yes)")
         :ok
 
       {:error, _} ->
-        Utils.log(:debug, "Check if file exists at key: #{key} (no)")
+        Utils.debug("Check if file exists at key: #{key} (no)")
         :error
     end
   end
@@ -49,11 +49,11 @@ defmodule Upload.Variant do
   defp download(key, dest) do
     case Storage.download(key, dest) do
       :ok ->
-        Utils.log(:info, "Downloaded file from key: #{key}")
+        Utils.info("Downloaded file from key: #{key}")
         :ok
 
       {:error, reason} ->
-        Utils.log(:error, "Failed to download file from key: #{key}")
+        Utils.error("Failed to download file from key: #{key}")
         {:error, {:download, reason}}
     end
   end
