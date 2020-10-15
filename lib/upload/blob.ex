@@ -8,9 +8,6 @@ defmodule Upload.Blob do
   alias Ecto.Changeset
   alias Upload.Utils
 
-  alias Upload.Analyzer.Image
-  alias Upload.Analyzer.Video
-
   @type t() :: %__MODULE__{}
 
   @key_length 28
@@ -56,14 +53,6 @@ defmodule Upload.Blob do
     })
   end
 
-  defp from_file(attrs) do
-    %__MODULE__{}
-    |> Changeset.cast(attrs, @file_fields)
-    |> Changeset.validate_required(@required_file_fields)
-    |> Changeset.put_change(:key, generate_key())
-    |> Changeset.prepare_changes(&analyze/1)
-  end
-
   @spec changeset(t(), map()) :: Changeset.t()
   def changeset(%__MODULE__{} = upload, attrs \\ %{}) do
     upload
@@ -71,13 +60,21 @@ defmodule Upload.Blob do
     |> Changeset.validate_required(@required_fields)
   end
 
-  defp analyze(changeset) do
+  defp from_file(attrs) do
+    %__MODULE__{}
+    |> Changeset.cast(attrs, @file_fields)
+    |> Changeset.validate_required(@required_file_fields)
+    |> Changeset.put_change(:key, generate_key())
+    |> Changeset.prepare_changes(&put_file_info/1)
+  end
+
+  defp put_file_info(changeset) do
     path = Changeset.fetch_change!(changeset, :path)
     content_type = Changeset.get_change(changeset, :content_type)
 
     with {:ok, %{size: byte_size}} <- File.stat(path),
          {:ok, checksum} <- FileStore.Stat.checksum_file(path),
-         {:ok, metadata} <- analyze(path, content_type) do
+         {:ok, metadata} <- Utils.analyze(path, content_type) do
       changeset
       |> Changeset.put_change(:byte_size, byte_size)
       |> Changeset.put_change(:checksum, checksum)
@@ -87,10 +84,6 @@ defmodule Upload.Blob do
         Changeset.add_error(changeset, :path, "is invalid", reason: reason)
     end
   end
-
-  defp analyze(path, "image/" <> _), do: Image.analyze(path)
-  defp analyze(path, "video/" <> _), do: Video.analyze(path)
-  defp analyze(_path, _), do: {:ok, %{}}
 
   for {digit, index} <- Enum.with_index(@alphabet) do
     defp base36(unquote(index)), do: <<unquote(digit)>>

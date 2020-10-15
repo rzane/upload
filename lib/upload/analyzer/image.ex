@@ -7,6 +7,10 @@ defmodule Upload.Analyzer.Image do
   @rotated ~w(RightTop LeftBottom)
 
   @impl true
+  def accept?("image/" <> _), do: true
+  def accept?(_), do: false
+
+  @impl true
   def analyze(path) do
     case Utils.cmd(:identify, @flags ++ [path]) do
       {:ok, out} ->

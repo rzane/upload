@@ -5,6 +5,11 @@ defmodule Upload.Analyzer.Video do
 
   @flags ~w(-print_format json -show_streams -show_format -v error)
 
+  @impl true
+  def accept?("video/" <> _), do: true
+  def accept?(_), do: false
+
+  @impl true
   def analyze(path) do
     with {:ok, out} <- Utils.cmd(:ffprobe, @flags ++ [path]),
          {:ok, data} <- Utils.json_decode(out) do

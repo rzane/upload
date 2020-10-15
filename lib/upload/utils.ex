@@ -3,8 +3,16 @@ defmodule Upload.Utils do
 
   require Logger
 
+  alias Upload.Analyzer.Null
+
   def secret_key_base, do: fetch_config!(:secret_key_base)
   def table_name, do: get_config(:table_name, "blobs")
+
+  def analyze(path, content_type) do
+    analyzers = get_config(:analyzers, [])
+    analyzer = Enum.find(analyzers, Null, & &1.accept?(content_type))
+    analyzer.analyze(path)
+  end
 
   def json_decode(data) do
     decoder = get_config(:json_library, Jason)
