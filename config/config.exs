@@ -2,9 +2,11 @@ use Mix.Config
 
 config :logger, level: :info
 
-config :upload,
+config :upload, ecto_repos: [Upload.Test.Repo]
+
+config :upload, Upload,
   log: false,
-  ecto_repos: [Upload.Test.Repo]
+  secret_key: "sup3r_secret"
 
 config :upload, Upload.Test.Repo,
   adapter: Ecto.Adapters.Postgres,

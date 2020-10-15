@@ -11,6 +11,14 @@ defmodule Upload.BlobTest do
     content_type: "text/plain"
   }
 
+  describe "generate_key/0" do
+    test "generates 28-character, base36-encoded key" do
+      for _ <- 0..10 do
+        assert Blob.generate_key() =~ ~r/^[a-z0-9]{28}$/
+      end
+    end
+  end
+
   describe "from_path/1" do
     test "builds a changeset" do
       changeset = Blob.from_path(@path)

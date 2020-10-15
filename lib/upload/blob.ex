@@ -7,12 +7,14 @@ defmodule Upload.Blob do
 
   alias Ecto.Changeset
   alias Upload.Utils
-  alias Upload.Key
 
   alias Upload.Analyzer.Image
   alias Upload.Analyzer.Video
 
   @type t() :: %__MODULE__{}
+
+  @key_length 28
+  @alphabet '0123456789abcdefghijklmnopqrstuvwxyz'
 
   @fields ~w(key filename content_type byte_size checksum)a
   @required_fields ~w(key filename byte_size checksum)a
@@ -31,6 +33,14 @@ defmodule Upload.Blob do
     timestamps(updated_at: false)
   end
 
+  @spec generate_key() :: binary()
+  def generate_key do
+    @key_length
+    |> :crypto.strong_rand_bytes()
+    |> :binary.bin_to_list()
+    |> Enum.map_join(&base36(rem(&1, 64)))
+  end
+
   @spec from_plug(%{__struct__: Plug.Upload}) :: Changeset.t()
   def from_plug(%{__struct__: Plug.Upload} = upload) do
     from_file(Map.from_struct(upload))
@@ -39,7 +49,7 @@ defmodule Upload.Blob do
   @spec from_path(Path.t()) :: Changeset.t()
   def from_path(path) do
     from_file(%{
-      key: Key.generate(),
+      key: generate_key(),
       path: path,
       filename: Path.basename(path),
       content_type: MIME.from_path(path)
@@ -50,7 +60,7 @@ defmodule Upload.Blob do
     %__MODULE__{}
     |> Changeset.cast(attrs, @file_fields)
     |> Changeset.validate_required(@required_file_fields)
-    |> Changeset.put_change(:key, Key.generate())
+    |> Changeset.put_change(:key, generate_key())
     |> Changeset.prepare_changes(&analyze/1)
   end
 
@@ -81,4 +91,10 @@ defmodule Upload.Blob do
   defp get_metadata(path, "image/" <> _), do: Image.get_metadata(path)
   defp get_metadata(path, "video/" <> _), do: Video.get_metadata(path)
   defp get_metadata(_path, _), do: {:ok, %{}}
+
+  for {digit, index} <- Enum.with_index(@alphabet) do
+    defp base36(unquote(index)), do: <<unquote(digit)>>
+  end
+
+  defp base36(_), do: base36(:random.uniform(36) - 1)
 end

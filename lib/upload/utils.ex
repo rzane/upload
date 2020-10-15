@@ -2,9 +2,15 @@ defmodule Upload.Utils do
   require Logger
 
   def log(level, message) do
-    if Application.get_env(:upload, :log, true) do
+    if get_config(:log, true) do
       Logger.log(level, message)
     end
+  end
+
+  def fetch_config!(name \\ Upload, key) do
+    :upload
+    |> Application.fetch_env!(name)
+    |> Keyword.fetch!(key)
   end
 
   def get_config(name \\ Upload, key, default \\ nil) do
