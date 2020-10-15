@@ -1,17 +1,18 @@
 defmodule Upload.Key do
   @type t() :: binary()
 
-  @base36_alphabet '0123456789abcdefghijklmnopqrstuvwxyz'
+  @key_length 28
+  @alphabet '0123456789abcdefghijklmnopqrstuvwxyz'
 
   @spec generate() :: t()
   def generate() do
-    28
+    @key_length
     |> :crypto.strong_rand_bytes()
     |> :binary.bin_to_list()
-    |> Enum.map_join(fn byte -> byte |> rem(64) |> base36() end)
+    |> Enum.map_join(&base36(rem(&1, 64)))
   end
 
-  for {digit, index} <- Enum.with_index(@base36_alphabet) do
+  for {digit, index} <- Enum.with_index(@alphabet) do
     defp base36(unquote(index)), do: <<unquote(digit)>>
   end
 
