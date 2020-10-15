@@ -1,33 +1,44 @@
 defmodule Upload.Variant do
+  alias Upload.Blob
   alias Upload.Token
   alias Upload.Storage
   alias Upload.Transformer
   alias Upload.Utils
 
-  def generate_key(blob_key, transforms) do
-    transform_key = Token.sign(transforms, :variant)
-    "variants/#{blob_key}/#{hexdigest(transform_key)}"
+  @enforce_keys [:key, :blob_key, :transforms]
+  defstruct [:key, :blob_key, :transforms]
+
+  def new(%Blob{key: blob_key}, transforms) do
+    new(blob_key, transforms)
   end
 
-  def process(blob_key, transforms) do
-    variant_key = generate_key(blob_key, transforms)
+  def new(blob_key, transforms) when is_binary(blob_key) do
+    token = Token.sign(transforms, :variant)
 
-    with :error <- stat(variant_key),
+    %__MODULE__{
+      blob_key: blob_key,
+      transforms: transforms,
+      key: "variants/#{blob_key}/#{hexdigest(token)}"
+    }
+  end
+
+  def process(%__MODULE__{} = variant) do
+    with :error <- stat(variant.key),
          {:ok, blob_path} <- tempfile(),
-         :ok <- download(blob_key, blob_path),
+         :ok <- download(variant.blob_key, blob_path),
          {:ok, variant_path} <- tempfile(),
-         :ok <- transform(blob_path, variant_path, transforms),
+         :ok <- transform(blob_path, variant_path, variant.transforms),
          :ok <- cleanup(blob_path),
-         :ok <- upload(variant_path, variant_key),
+         :ok <- upload(variant_path, variant.key),
          :ok <- cleanup(variant_path),
-         do: {:ok, variant_key}
+         do: :ok
   end
 
   defp stat(key) do
     case Storage.stat(key) do
       {:ok, _} ->
         Utils.log(:debug, "Check if file exists at key: #{key} (yes)")
-        {:ok, key}
+        :ok
 
       {:error, _} ->
         Utils.log(:debug, "Check if file exists at key: #{key} (no)")
