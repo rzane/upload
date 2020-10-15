@@ -6,8 +6,10 @@ defmodule Upload.Analyzer.Video do
   @flags ~w(-print_format json -show_streams -show_format -v error)
 
   def get_metadata(path) do
+    json_decoder = Utils.get_config(:json_decoder, Jason)
+
     with {:ok, out} <- Utils.cmd(__MODULE__, :ffprobe, @flags ++ [path]),
-         {:ok, data} <- Jason.decode(out) do
+         {:ok, data} <- json_decoder.decode(out) do
       {:ok, extract(data)}
     else
       {:error, :enoent} ->
