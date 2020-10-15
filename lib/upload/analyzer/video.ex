@@ -28,7 +28,7 @@ defmodule Upload.Analyzer.Video do
     end
   end
 
-  def extract(data) do
+  defp extract(data) do
     format = Map.get(data, "format", %{})
     streams = Map.get(data, "streams", [])
     video = Enum.find(streams, %{}, &video_stream?/1)
@@ -45,8 +45,8 @@ defmodule Upload.Analyzer.Video do
     |> Enum.into(%{})
   end
 
-  def video_stream?(%{"codec_type" => "video"}), do: true
-  def video_stream?(_), do: false
+  defp video_stream?(%{"codec_type" => "video"}), do: true
+  defp video_stream?(_), do: false
 
   defp rotate_dimensions({height, width}, angle) when angle in [90, 270], do: {width, height}
   defp rotate_dimensions(dimensions, _), do: dimensions
