@@ -3,7 +3,7 @@ defmodule Upload.Utils do
 
   require Logger
 
-  def secret_key, do: fetch_config!(:secret_key)
+  def secret_key_base, do: fetch_config!(:secret_key_base)
   def table_name, do: get_config(:table_name, "blobs")
 
   def json_decode(data) do

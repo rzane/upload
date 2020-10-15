@@ -20,6 +20,6 @@ defmodule Upload.Token do
   end
 
   defp get_secret(salt) do
-    KeyGenerator.generate(Utils.secret_key(), to_string(salt))
+    KeyGenerator.generate(Utils.secret_key_base(), to_string(salt))
   end
 end

@@ -4,7 +4,7 @@ config :logger, level: :info
 
 config :upload,
   log: false,
-  secret_key: "sup3r_secret",
+  secret_key_base: "sup3r_secret",
   ecto_repos: [Upload.Test.Repo]
 
 config :upload, Upload.Test.Repo,
