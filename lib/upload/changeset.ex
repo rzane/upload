@@ -25,4 +25,23 @@ defmodule Upload.Changeset do
         changeset
     end
   end
+
+  @spec validate_content_type(Changeset.t(), atom(), list(), keyword()) :: Changeset.t()
+  def validate_content_type(changeset, field, types, opts \\ []) do
+    validate_nested(
+      changeset,
+      field,
+      &Changeset.validate_inclusion(&1, :content_type, types, opts)
+    )
+  end
+
+  defp validate_nested(changeset, field, fun) do
+    case Changeset.fetch_change(changeset, field) do
+      {:ok, %Changeset{} = nested} ->
+        Changeset.put_change(changeset, field, fun.(nested))
+
+      _ ->
+        changeset
+    end
+  end
 end
