@@ -27,7 +27,7 @@ defmodule Upload.VariantTest do
 
     test "transforms an image", %{store: store} do
       assert :ok = FileStore.upload(store, @path, @blob_key)
-      assert {:ok, variant_key} = Variant.process(@blob_key, resize: "10x7")
+      assert {:ok, variant_key} = Variant.process(@blob_key, resize: "10x10")
       assert {:ok, _} = FileStore.stat(store, variant_key)
       assert {:ok, tmp} = Plug.Upload.random_file("upload_test")
       assert :ok = FileStore.download(store, variant_key, tmp)
