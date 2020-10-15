@@ -1,6 +1,7 @@
 defmodule Upload.VariantTest do
   use ExUnit.Case
 
+  alias Upload.Storage
   alias Upload.Variant
   alias Upload.Analyzer.Image
   alias FileStore.Adapters.Memory
@@ -19,17 +20,17 @@ defmodule Upload.VariantTest do
 
     setup do
       start_supervised!(Memory)
-      [store: FileStore.new(adapter: Memory)]
+      :ok
     end
 
-    test "transforms an image", %{store: store} do
+    test "transforms an image" do
       variant = Variant.new("abc", resize: "10x10")
 
-      assert :ok = FileStore.upload(store, @path, variant.blob_key)
+      assert :ok = Storage.upload(@path, variant.blob_key)
       assert :ok = Variant.process(variant)
-      assert {:ok, _} = FileStore.stat(store, variant.key)
+      assert {:ok, _} = Storage.stat(variant.key)
       assert {:ok, tmp} = Plug.Upload.random_file("upload_test")
-      assert :ok = FileStore.download(store, variant.key, tmp)
+      assert :ok = Storage.download(variant.key, tmp)
       assert {:ok, %{width: 10, height: 7}} = Image.get_metadata(tmp)
       assert :ok = File.rm(tmp)
     end
