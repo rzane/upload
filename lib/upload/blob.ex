@@ -77,7 +77,7 @@ defmodule Upload.Blob do
 
     with {:ok, %{size: byte_size}} <- File.stat(path),
          {:ok, checksum} <- FileStore.Stat.checksum_file(path),
-         {:ok, metadata} <- get_metadata(path, content_type) do
+         {:ok, metadata} <- analyze(path, content_type) do
       changeset
       |> Changeset.put_change(:byte_size, byte_size)
       |> Changeset.put_change(:checksum, checksum)
@@ -88,9 +88,9 @@ defmodule Upload.Blob do
     end
   end
 
-  defp get_metadata(path, "image/" <> _), do: Image.get_metadata(path)
-  defp get_metadata(path, "video/" <> _), do: Video.get_metadata(path)
-  defp get_metadata(_path, _), do: {:ok, %{}}
+  defp analyze(path, "image/" <> _), do: Image.analyze(path)
+  defp analyze(path, "video/" <> _), do: Video.analyze(path)
+  defp analyze(_path, _), do: {:ok, %{}}
 
   for {digit, index} <- Enum.with_index(@alphabet) do
     defp base36(unquote(index)), do: <<unquote(digit)>>

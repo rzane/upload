@@ -1,3 +1,3 @@
 defmodule Upload.Analyzer do
-  @callback get_metadata(Path.t()) :: {:ok, map()} | {:error, term()}
+  @callback analyze(Path.t()) :: {:ok, map()} | {:error, term()}
 end

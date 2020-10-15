@@ -7,7 +7,7 @@ defmodule Upload.Analyzer.Image do
   @rotated ~w(RightTop LeftBottom)
 
   @impl true
-  def get_metadata(path) do
+  def analyze(path) do
     case Utils.cmd(:identify, @flags ++ [path]) do
       {:ok, out} ->
         {:ok, parse(out)}

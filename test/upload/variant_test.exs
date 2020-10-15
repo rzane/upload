@@ -31,7 +31,7 @@ defmodule Upload.VariantTest do
       assert {:ok, _} = Storage.stat(variant.key)
       assert {:ok, tmp} = Plug.Upload.random_file("upload_test")
       assert :ok = Storage.download(variant.key, tmp)
-      assert {:ok, %{width: 10, height: 7}} = Image.get_metadata(tmp)
+      assert {:ok, %{width: 10, height: 7}} = Image.analyze(tmp)
       assert :ok = File.rm(tmp)
     end
   end
