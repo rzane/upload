@@ -7,7 +7,7 @@ defmodule Upload.Utils do
   def table_name, do: get_config(:table_name, "blobs")
 
   def json_decode(data) do
-    decoder = get_config(:json_decoder, Jason)
+    decoder = get_config(:json_library, Jason)
     decoder.decode(data)
   end
 
