@@ -67,8 +67,13 @@ defmodule Upload.Variant do
 
   defp upload(path, key) do
     case Storage.upload(path, key) do
-      :ok -> :ok
-      {:error, reason} -> {:error, {:upload, reason}}
+      :ok ->
+        Utils.info("Uploaded file to key: #{key}")
+        :ok
+
+      {:error, reason} ->
+        Utils.info("Failed to upload file to key: #{key}")
+        {:error, {:upload, reason}}
     end
   end
 
