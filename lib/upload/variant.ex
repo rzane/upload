@@ -13,12 +13,12 @@ defmodule Upload.Variant do
   end
 
   def new(blob_key, transforms) when is_binary(blob_key) do
-    token = Token.sign(transforms, :variant)
+    signed_transforms = Token.sign_transforms(transforms)
 
     %__MODULE__{
       blob_key: blob_key,
       transforms: transforms,
-      key: "variants/#{blob_key}/#{hexdigest(token)}"
+      key: "variants/#{blob_key}/#{hexdigest(signed_transforms)}"
     }
   end
 
