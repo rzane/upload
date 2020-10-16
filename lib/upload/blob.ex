@@ -9,8 +9,11 @@ defmodule Upload.Blob do
   alias Upload.Utils
 
   @type key :: binary()
+  @type id :: integer() | binary()
+
   @type t :: %__MODULE__{
-          key: binary(),
+          id: id(),
+          key: key(),
           filename: binary(),
           content_type: binary(),
           byte_size: integer(),
@@ -39,12 +42,11 @@ defmodule Upload.Blob do
     timestamps(updated_at: false)
   end
 
-  @spec sign_key(t() | key()) :: binary()
-  def sign_key(%__MODULE__{key: key}), do: Utils.sign(key, :key)
-  def sign_key(key) when is_binary(key), do: Utils.sign(key, :key)
+  @spec sign_id(id()) :: binary()
+  def sign_id(id), do: Utils.sign(id, :blob)
 
-  @spec verify_key(binary()) :: {:ok, key()} | :error
-  def verify_key(signed_key), do: Utils.verify(signed_key, :key)
+  @spec verify_id(binary()) :: {:ok, id()} | :error
+  def verify_id(signed_id), do: Utils.verify(signed_id, :blob)
 
   @spec generate_key() :: binary()
   def generate_key do
