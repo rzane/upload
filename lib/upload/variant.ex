@@ -21,7 +21,7 @@ defmodule Upload.Variant do
 
   def new(blob_key, transforms) when is_binary(blob_key) do
     signed_transforms = Utils.sign(transforms, :transforms)
-    key = get_key(blob_key, signed_transforms)
+    key = join_key(blob_key, signed_transforms)
     %__MODULE__{key: key, blob_key: blob_key, transforms: transforms}
   end
 
@@ -36,11 +36,9 @@ defmodule Upload.Variant do
   def verify({signed_key, signed_transforms}) do
     with {:ok, blob_key} <- Utils.verify(signed_key, :key),
          {:ok, transforms} <- Utils.verify(signed_transforms, :transforms) do
-      %__MODULE__{
-        key: get_key(blob_key, signed_transforms),
-        blob_key: blob_key,
-        transforms: transforms
-      }
+      key = join_key(blob_key, signed_transforms)
+      variant = %__MODULE__{key: key, blob_key: blob_key, transforms: transforms}
+      {:ok, variant}
     end
   end
 
@@ -115,7 +113,7 @@ defmodule Upload.Variant do
     end
   end
 
-  defp get_key(blob_key, signed_transforms) do
+  defp join_key(blob_key, signed_transforms) do
     "variants/#{blob_key}/#{hexdigest(signed_transforms)}"
   end
 
