@@ -1,4 +1,10 @@
 defmodule Upload.Transformer do
+  @moduledoc """
+  Applies transformations to an image.
+
+  See: https://imagemagick.org/script/command-line-options.php
+  """
+
   alias Upload.Utils
 
   def transform(source, destination, transforms) do
@@ -17,21 +23,12 @@ defmodule Upload.Transformer do
     end
   end
 
-  defp reduce({flag, param}, args) do
-    add(args, normalize_flag(flag), param)
+  defp reduce({name, param}, args) when is_atom(name) do
+    args ++ ["-" <> to_flag(name), param]
   end
 
-  defp normalize_flag(flag) do
-    flag
-    |> to_string()
-    |> String.replace("_", "-")
-  end
-
-  defp add(args, "resize-to-limit", param) do
-    add(args, "resize", "#{param}>")
-  end
-
-  defp add(args, flag, param) when is_binary(param) do
-    args ++ ["-#{flag}", param]
+  # FIXME: Whitelist command-line options
+  defp to_flag(name) do
+    name |> to_string() |> String.replace("_", "-")
   end
 end
