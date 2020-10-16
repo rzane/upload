@@ -8,7 +8,16 @@ defmodule Upload.Blob do
   alias Ecto.Changeset
   alias Upload.Utils
 
-  @type t() :: %__MODULE__{}
+  @type key :: binary()
+  @type t :: %__MODULE__{
+          key: binary(),
+          filename: binary(),
+          content_type: binary(),
+          byte_size: integer(),
+          checksum: binary(),
+          metadata: map(),
+          path: binary() | nil
+        }
 
   @key_length 28
   @alphabet '0123456789abcdefghijklmnopqrstuvwxyz'
@@ -29,6 +38,13 @@ defmodule Upload.Blob do
     field :path, :string, virtual: true
     timestamps(updated_at: false)
   end
+
+  @spec sign_key(t() | key()) :: binary()
+  def sign_key(%__MODULE__{key: key}), do: Utils.sign(key, :key)
+  def sign_key(key) when is_binary(key), do: Utils.sign(key, :key)
+
+  @spec verify_key(binary()) :: {:ok, key()} | :error
+  def verify_key(signed_key), do: Utils.verify(signed_key, :key)
 
   @spec generate_key() :: binary()
   def generate_key do

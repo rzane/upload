@@ -1,6 +1,5 @@
 defmodule Upload.Variant do
   alias Upload.Blob
-  alias Upload.Token
   alias Upload.Storage
   alias Upload.Transformer
   alias Upload.Utils
@@ -8,20 +7,44 @@ defmodule Upload.Variant do
   @enforce_keys [:key, :blob_key, :transforms]
   defstruct [:key, :blob_key, :transforms]
 
+  @type transforms :: keyword()
+  @type t :: %__MODULE__{
+          key: binary(),
+          blob_key: binary(),
+          transforms: transforms()
+        }
+
+  @spec new(Blob.t() | Blob.key(), transforms()) :: t()
   def new(%Blob{key: blob_key}, transforms) do
     new(blob_key, transforms)
   end
 
   def new(blob_key, transforms) when is_binary(blob_key) do
-    signed_transforms = Token.sign_transforms(transforms)
-
-    %__MODULE__{
-      blob_key: blob_key,
-      transforms: transforms,
-      key: "variants/#{blob_key}/#{hexdigest(signed_transforms)}"
-    }
+    signed_transforms = Utils.sign(transforms, :transforms)
+    key = get_key(blob_key, signed_transforms)
+    %__MODULE__{key: key, blob_key: blob_key, transforms: transforms}
   end
 
+  @spec sign(t()) :: {binary(), binary()}
+  def sign(%__MODULE__{blob_key: blob_key, transforms: transforms}) do
+    signed_blob_key = Utils.sign(blob_key, :key)
+    signed_transforms = Utils.sign(transforms, :transforms)
+    {signed_blob_key, signed_transforms}
+  end
+
+  @spec verify({binary(), binary()}) :: {:ok, t()} | :error
+  def verify({signed_key, signed_transforms}) do
+    with {:ok, blob_key} <- Utils.verify(signed_key, :key),
+         {:ok, transforms} <- Utils.verify(signed_transforms, :transforms) do
+      %__MODULE__{
+        key: get_key(blob_key, signed_transforms),
+        blob_key: blob_key,
+        transforms: transforms
+      }
+    end
+  end
+
+  @spec process(t()) :: :ok | {:error, term()}
   def process(%__MODULE__{} = variant) do
     with :error <- stat(variant.key),
          {:ok, blob_path} <- tempfile(),
@@ -90,6 +113,10 @@ defmodule Upload.Variant do
       {reason, _, _} -> {:error, {:tempfile, reason}}
       {reason, _} -> {:error, {:tempfile, reason}}
     end
+  end
+
+  defp get_key(blob_key, signed_transforms) do
+    "variants/#{blob_key}/#{hexdigest(signed_transforms)}"
   end
 
   defp hexdigest(data) do
