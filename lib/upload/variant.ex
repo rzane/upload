@@ -28,7 +28,7 @@ defmodule Upload.Variant do
   def process(%__MODULE__{} = variant) do
     with :error <- stat(variant.key),
          {:ok, blob_path} <- tempfile(),
-         :ok <- download(variant.blob_key, blob_path),
+         :ok <- download(variant.blob.key, blob_path),
          {:ok, variant_path} <- tempfile(),
          :ok <- transform(blob_path, variant_path, variant.transforms),
          :ok <- cleanup(blob_path),
