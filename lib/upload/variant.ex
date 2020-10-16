@@ -15,12 +15,12 @@ defmodule Upload.Variant do
           transforms: transforms()
         }
 
-  @spec new(Blob.t(), transforms()) :: t()
-  def new(%Blob{} = blob, transforms) do
+  @spec new(Verifier.key_base(), Blob.t(), transforms()) :: t()
+  def new(conn, %Blob{} = blob, transforms) do
     %__MODULE__{
       blob: blob,
       transforms: transforms,
-      key: produce_key(blob, transforms)
+      key: produce_key(conn, blob, transforms)
     }
   end
 
@@ -95,8 +95,8 @@ defmodule Upload.Variant do
     end
   end
 
-  defp produce_key(blob, transforms) do
-    signed_transforms = Verifier.sign_transforms(transforms)
+  defp produce_key(conn, blob, transforms) do
+    signed_transforms = Verifier.sign_transforms(conn, transforms)
     "variants/#{blob.key}/#{hexdigest(signed_transforms)}"
   end
 

@@ -10,61 +10,47 @@ defmodule Upload.Router do
   plug :dispatch, builder_opts()
 
   # TODO: Accept query parameter for disposition
-  # TODO: Allow `get_public_url`
-  # TODO: Send content_type to `get_signed_url`
+  # TODO: Allow `get_public_url` instead of `get_signed_url`
+  # TODO: Allow for expiration
+  # TODO: Send content_type and disposition to the service
 
   get "/blobs/:signed_blob_id/*_filename" do
-    opts
-    |> fetch_repo!()
-    |> verify_blob(signed_blob_id)
-    |> case do
-      {:ok, blob} ->
-        redirect(conn, blob.key)
-
-      :error ->
-        not_found(conn)
+    with {:ok, blob_id} <- Verifier.verify_blob_id(conn, signed_blob_id),
+         {:ok, blob} <- fetch_blob(blob_id, opts) do
+      redirect(conn, blob.key)
+    else
+      :error -> not_found(conn)
     end
   end
 
   get "/variants/:signed_blob_id/:signed_transforms/*_filename" do
-    opts
-    |> fetch_repo!()
-    |> verify_variant(signed_blob_id, signed_transforms)
-    |> case do
-      {:ok, variant} ->
-        process_and_redirect(conn, variant)
+    with {:ok, blob_id} <- Verifier.verify_blob_id(conn, signed_blob_id),
+         {:ok, transforms} <- Verifier.verify_transforms(conn, signed_transforms),
+         {:ok, blob} <- fetch_blob(blob_id, opts),
+         variant <- Variant.new(conn, blob, transforms),
+         :ok <- process_variant(variant) do
+      redirect(conn, variant.key)
+    else
+      :error -> not_found(conn)
+    end
+  end
+
+  defp fetch_blob(blob_id, opts) do
+    case Keyword.fetch(opts, :repo) do
+      {:ok, repo} ->
+        case repo.get(Blob, blob_id) do
+          nil -> :error
+          blob -> {:ok, blob}
+        end
 
       :error ->
-        not_found(conn)
+        raise "You need to pass a repo to `Upload.Router`"
     end
   end
 
-  defp verify_blob(repo, signed_blob_id) do
-    with {:ok, blob_id} <- Verifier.verify_blob_id(signed_blob_id) do
-      case repo.get(Blob, blob_id) do
-        nil ->
-          :error
-
-        blob ->
-          {:ok, blob}
-      end
-    end
-  end
-
-  defp verify_variant(repo, signed_blob_id, signed_transforms) do
-    with {:ok, transforms} <- Verifier.verify_transforms(signed_transforms),
-         {:ok, blob} <- verify_blob(repo, signed_blob_id) do
-      {:ok, Variant.new(blob, transforms)}
-    end
-  end
-
-  defp process_and_redirect(conn, variant) do
-    case Variant.process(variant) do
-      :ok ->
-        redirect(conn, variant.key)
-
-      {:error, reason} ->
-        raise "Failed to transform key: #{variant.blob.key} (reason: #{inspect(reason)})"
+  defp process_variant(variant) do
+    with {:error, reason} <- Variant.process(variant) do
+      raise "Failed to transform key: #{variant.blob.key} (reason: #{inspect(reason)})"
     end
   end
 
@@ -82,19 +68,5 @@ defmodule Upload.Router do
 
   defp not_found(conn) do
     send_resp(conn, 404, "")
-  end
-
-  defp fetch_repo!(opts) do
-    case Keyword.fetch(opts, :repo) do
-      {:ok, repo} ->
-        repo
-
-      :error ->
-        raise """
-        You need to pass a repo to `Upload.Router`. Here's an example:
-
-          forward "/storage", Upload.Router, repo: MyApp.Repo
-        """
-    end
   end
 end

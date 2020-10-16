@@ -4,16 +4,9 @@ defmodule Upload.Utils do
   require Logger
 
   alias Upload.Analyzer.Null
-  alias Plug.Crypto.KeyGenerator
 
   def get_table_name do
     get_config(:table_name, "blobs")
-  end
-
-  def generate_secret(salt) do
-    :secret_key_base
-    |> fetch_config!()
-    |> KeyGenerator.generate(salt)
   end
 
   def analyze(path, content_type) do

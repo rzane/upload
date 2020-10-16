@@ -16,25 +16,25 @@ defmodule Upload.Router.Helpers do
     end
   end
 
-  def blob_path(_conn, %Blob{} = blob, opts \\ []) do
+  def blob_path(conn, %Blob{} = blob, opts \\ []) do
     {proxy_path, opts} = Keyword.pop(opts, :proxy_path, "/storage")
 
     proxy_path
     |> clean_path()
     |> append_path("blobs")
-    |> append_path(Verifier.sign_blob_id(blob.id))
+    |> append_path(Verifier.sign_blob_id(conn, blob.id))
     |> append_path(blob.filename)
     |> append_query(opts)
   end
 
-  def variant_path(_conn, %Blob{} = blob, transforms, opts \\ []) do
+  def variant_path(conn, %Blob{} = blob, transforms, opts \\ []) do
     {proxy_path, opts} = Keyword.pop(opts, :proxy_path, "/storage")
 
     proxy_path
     |> clean_path()
     |> append_path("variants")
-    |> append_path(Verifier.sign_blob_id(blob.id))
-    |> append_path(Verifier.sign_transforms(transforms))
+    |> append_path(Verifier.sign_blob_id(conn, blob.id))
+    |> append_path(Verifier.sign_transforms(conn, transforms))
     |> append_path(blob.filename)
     |> append_query(opts)
   end

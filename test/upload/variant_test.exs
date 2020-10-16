@@ -7,10 +7,12 @@ defmodule Upload.VariantTest do
   alias Upload.Analyzer.Image
   alias FileStore.Adapters.Memory
 
+  @secret "very_very_very_secret"
+
   describe "new/2" do
     test "describes a variant" do
       blob = %Blob{key: "abc"}
-      variant = Variant.new(blob, resize: "200x200")
+      variant = Variant.new(@secret, blob, resize: "200x200")
 
       assert variant.blob == blob
       assert variant.transforms == [resize: "200x200"]
@@ -28,7 +30,7 @@ defmodule Upload.VariantTest do
 
     test "transforms an image" do
       blob = %Blob{key: "abc"}
-      variant = Variant.new(blob, resize: "10x10")
+      variant = Variant.new(@secret, blob, resize: "10x10")
 
       assert :ok = Storage.upload(@path, blob.key)
       assert :ok = Variant.process(variant)
