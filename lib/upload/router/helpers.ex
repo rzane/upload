@@ -1,6 +1,5 @@
-defmodule Upload.Proxy.Helpers do
+defmodule Upload.Router.Helpers do
   alias Upload.Blob
-  # alias Upload.Variant
   alias Upload.Verifier
 
   defmacro __using__(config) do

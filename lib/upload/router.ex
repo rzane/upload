@@ -1,4 +1,4 @@
-defmodule Upload.Proxy do
+defmodule Upload.Router do
   use Plug.Router
 
   alias Upload.Blob
@@ -14,9 +14,10 @@ defmodule Upload.Proxy do
   # TODO: Send content_type to `get_signed_url`
 
   get "/blobs/:signed_blob_id/*_filename" do
-    repo = Keyword.fetch!(opts, :repo)
-
-    case verify_blob(repo, signed_blob_id) do
+    opts
+    |> fetch_repo!()
+    |> verify_blob(signed_blob_id)
+    |> case do
       {:ok, blob} ->
         redirect(conn, blob.key)
 
@@ -26,9 +27,10 @@ defmodule Upload.Proxy do
   end
 
   get "/variants/:signed_blob_id/:signed_transforms/*_filename" do
-    repo = Keyword.fetch!(opts, :repo)
-
-    case verify_variant(repo, signed_blob_id, signed_transforms) do
+    opts
+    |> fetch_repo!()
+    |> verify_variant(signed_blob_id, signed_transforms)
+    |> case do
       {:ok, variant} ->
         process_and_redirect(conn, variant)
 
@@ -66,7 +68,7 @@ defmodule Upload.Proxy do
     end
   end
 
-  def redirect(conn, key) do
+  defp redirect(conn, key) do
     case Storage.get_signed_url(key) do
       {:ok, url} ->
         conn
@@ -78,7 +80,21 @@ defmodule Upload.Proxy do
     end
   end
 
-  def not_found(conn) do
+  defp not_found(conn) do
     send_resp(conn, 404, "")
+  end
+
+  defp fetch_repo!(opts) do
+    case Keyword.fetch(opts, :repo) do
+      {:ok, repo} ->
+        repo
+
+      :error ->
+        raise """
+        You need to pass a repo to `Upload.Router`. Here's an example:
+
+          forward "/storage", Upload.Router, repo: MyApp.Repo
+        """
+    end
   end
 end
