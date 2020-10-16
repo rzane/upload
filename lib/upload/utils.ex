@@ -7,9 +7,8 @@ defmodule Upload.Utils do
   alias Plug.Crypto.KeyGenerator
   alias Plug.Crypto.MessageVerifier
 
-  def table_name do
-    get_config(:table_name, "blobs")
-  end
+  def get_repo, do: fetch_config!(:repo)
+  def get_table_name, do: get_config(:table_name, "blobs")
 
   def sign(data, salt) do
     secret = get_secret(salt)

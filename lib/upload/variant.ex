@@ -4,40 +4,40 @@ defmodule Upload.Variant do
   alias Upload.Transformer
   alias Upload.Utils
 
-  @enforce_keys [:key, :blob_key, :transforms]
-  defstruct [:key, :blob_key, :transforms]
+  @enforce_keys [:key, :blob, :transforms]
+  defstruct [:key, :blob, :transforms]
 
   @type transforms :: keyword()
   @type t :: %__MODULE__{
           key: binary(),
-          blob_key: binary(),
+          blob: Blob.t(),
           transforms: transforms()
         }
 
-  @spec new(Blob.t() | Blob.key(), transforms()) :: t()
-  def new(%Blob{key: blob_key}, transforms) do
-    new(blob_key, transforms)
-  end
-
-  def new(blob_key, transforms) when is_binary(blob_key) do
+  @spec new(Blob.t(), transforms()) :: t()
+  def new(%Blob{} = blob, transforms) do
     signed_transforms = Utils.sign(transforms, :transforms)
-    key = join_key(blob_key, signed_transforms)
-    %__MODULE__{key: key, blob_key: blob_key, transforms: transforms}
+    key = join_key(blob.key, signed_transforms)
+    %__MODULE__{key: key, blob: blob, transforms: transforms}
   end
 
   @spec sign(t()) :: {binary(), binary()}
-  def sign(%__MODULE__{blob_key: blob_key, transforms: transforms}) do
-    signed_blob_key = Utils.sign(blob_key, :key)
+  def sign(%__MODULE__{blob: blob, transforms: transforms}) do
+    signed_blob = Blob.sign(blob)
     signed_transforms = Utils.sign(transforms, :transforms)
-    {signed_blob_key, signed_transforms}
+    {signed_blob, signed_transforms}
   end
 
   @spec verify({binary(), binary()}) :: {:ok, t()} | :error
-  def verify({signed_key, signed_transforms}) do
-    with {:ok, blob_key} <- Utils.verify(signed_key, :key),
+  def verify({signed_blob, signed_transforms}) do
+    with {:ok, blob} <- Blob.verify(signed_blob),
          {:ok, transforms} <- Utils.verify(signed_transforms, :transforms) do
-      key = join_key(blob_key, signed_transforms)
-      variant = %__MODULE__{key: key, blob_key: blob_key, transforms: transforms}
+      variant = %__MODULE__{
+        blob: blob,
+        transforms: transforms,
+        key: join_key(blob.key, signed_transforms)
+      }
+
       {:ok, variant}
     end
   end

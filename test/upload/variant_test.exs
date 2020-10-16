@@ -2,14 +2,17 @@ defmodule Upload.VariantTest do
   use ExUnit.Case
 
   alias Upload.Storage
+  alias Upload.Blob
   alias Upload.Variant
   alias Upload.Analyzer.Image
   alias FileStore.Adapters.Memory
 
   describe "new/2" do
     test "describes a variant" do
-      variant = Variant.new("abc", resize: "200x200")
-      assert variant.blob_key == "abc"
+      blob = %Blob{key: "abc"}
+      variant = Variant.new(blob, resize: "200x200")
+
+      assert variant.blob == blob
       assert variant.transforms == [resize: "200x200"]
       assert variant.key =~ ~r|^variants/abc/[a-z0-9]{64}$|
     end
@@ -24,9 +27,10 @@ defmodule Upload.VariantTest do
     end
 
     test "transforms an image" do
-      variant = Variant.new("abc", resize: "10x10")
+      blob = %Blob{key: "abc"}
+      variant = Variant.new(blob, resize: "10x10")
 
-      assert :ok = Storage.upload(@path, variant.blob_key)
+      assert :ok = Storage.upload(@path, blob.key)
       assert :ok = Variant.process(variant)
       assert {:ok, _} = Storage.stat(variant.key)
       assert {:ok, tmp} = Plug.Upload.random_file("upload_test")

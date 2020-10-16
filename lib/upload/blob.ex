@@ -9,10 +9,9 @@ defmodule Upload.Blob do
   alias Upload.Utils
 
   @type key :: binary()
-  @type id :: integer() | binary()
 
   @type t :: %__MODULE__{
-          id: id(),
+          id: integer() | binary(),
           key: key(),
           filename: binary(),
           content_type: binary(),
@@ -31,7 +30,7 @@ defmodule Upload.Blob do
   @file_fields ~w(path filename content_type)a
   @required_file_fields ~w(path filename)a
 
-  schema Utils.table_name() do
+  schema Utils.get_table_name() do
     field :key, :string
     field :filename, :string
     field :content_type, :string
@@ -42,11 +41,22 @@ defmodule Upload.Blob do
     timestamps(updated_at: false)
   end
 
-  @spec sign_id(id()) :: binary()
-  def sign_id(id), do: Utils.sign(id, :blob)
+  @spec sign(t()) :: binary()
+  def sign(%__MODULE__{id: id}) do
+    Utils.sign(id, :blob)
+  end
 
-  @spec verify_id(binary()) :: {:ok, id()} | :error
-  def verify_id(signed_id), do: Utils.verify(signed_id, :blob)
+  @spec verify(binary()) :: {:ok, t()} | :error
+  def verify(signed_id) do
+    repo = Utils.get_repo()
+
+    with {:ok, id} <- Utils.verify(signed_id, :blob) do
+      case repo.get(__MODULE__, id) do
+        nil -> :error
+        blob -> {:ok, blob}
+      end
+    end
+  end
 
   @spec generate_key() :: binary()
   def generate_key do
