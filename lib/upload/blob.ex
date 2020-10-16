@@ -9,9 +9,10 @@ defmodule Upload.Blob do
   alias Upload.Utils
 
   @type key :: binary()
+  @type id :: integer() | binary()
 
   @type t :: %__MODULE__{
-          id: integer() | binary(),
+          id: id(),
           key: key(),
           filename: binary(),
           content_type: binary(),
@@ -39,23 +40,6 @@ defmodule Upload.Blob do
     field :metadata, :map
     field :path, :string, virtual: true
     timestamps(updated_at: false)
-  end
-
-  @spec sign(t()) :: binary()
-  def sign(%__MODULE__{id: id}) do
-    Utils.sign(id, :blob)
-  end
-
-  @spec verify(binary()) :: {:ok, t()} | :error
-  def verify(signed_id) do
-    repo = Utils.get_repo()
-
-    with {:ok, id} <- Utils.verify(signed_id, :blob) do
-      case repo.get(__MODULE__, id) do
-        nil -> :error
-        blob -> {:ok, blob}
-      end
-    end
   end
 
   @spec generate_key() :: binary()

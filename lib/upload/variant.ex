@@ -2,6 +2,7 @@ defmodule Upload.Variant do
   alias Upload.Blob
   alias Upload.Storage
   alias Upload.Transformer
+  alias Upload.Verifier
   alias Upload.Utils
 
   @enforce_keys [:key, :blob, :transforms]
@@ -16,30 +17,11 @@ defmodule Upload.Variant do
 
   @spec new(Blob.t(), transforms()) :: t()
   def new(%Blob{} = blob, transforms) do
-    signed_transforms = Utils.sign(transforms, :transforms)
-    key = join_key(blob.key, signed_transforms)
-    %__MODULE__{key: key, blob: blob, transforms: transforms}
-  end
-
-  @spec sign(t()) :: {binary(), binary()}
-  def sign(%__MODULE__{blob: blob, transforms: transforms}) do
-    signed_blob = Blob.sign(blob)
-    signed_transforms = Utils.sign(transforms, :transforms)
-    {signed_blob, signed_transforms}
-  end
-
-  @spec verify({binary(), binary()}) :: {:ok, t()} | :error
-  def verify({signed_blob, signed_transforms}) do
-    with {:ok, blob} <- Blob.verify(signed_blob),
-         {:ok, transforms} <- Utils.verify(signed_transforms, :transforms) do
-      variant = %__MODULE__{
-        blob: blob,
-        transforms: transforms,
-        key: join_key(blob.key, signed_transforms)
-      }
-
-      {:ok, variant}
-    end
+    %__MODULE__{
+      blob: blob,
+      transforms: transforms,
+      key: produce_key(blob, transforms)
+    }
   end
 
   @spec process(t()) :: :ok | {:error, term()}
@@ -113,8 +95,9 @@ defmodule Upload.Variant do
     end
   end
 
-  defp join_key(blob_key, signed_transforms) do
-    "variants/#{blob_key}/#{hexdigest(signed_transforms)}"
+  defp produce_key(blob, transforms) do
+    signed_transforms = Verifier.sign_transforms(transforms)
+    "variants/#{blob.key}/#{hexdigest(signed_transforms)}"
   end
 
   defp hexdigest(data) do
