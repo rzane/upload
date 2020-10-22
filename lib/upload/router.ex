@@ -1,56 +1,43 @@
 defmodule Upload.Router do
   use Plug.Router
 
-  alias Upload.Blob
+  alias Upload.Key
+  alias Upload.Utils
   alias Upload.Variant
   alias Upload.Storage
-  alias Upload.Verifier
 
   plug :match
-  plug :dispatch, builder_opts()
+  plug :dispatch
 
   # TODO: Accept query parameter for disposition
   # TODO: Allow `get_public_url` instead of `get_signed_url`
   # TODO: Allow for expiration
   # TODO: Send content_type and disposition to the service
 
-  get "/blobs/:signed_blob_id/*_filename" do
-    with {:ok, blob_id} <- Verifier.verify_blob_id(conn, signed_blob_id),
-         {:ok, blob} <- fetch_blob(blob_id, opts) do
-      redirect(conn, blob.key)
-    else
-      :error -> not_found(conn)
+  get "/blobs/:signed_blob/*_filename" do
+    case Key.verify(signed_blob) do
+      {:ok, blob} ->
+        redirect(conn, blob.key)
+
+      :error ->
+        send_resp(conn, 400, "")
     end
   end
 
-  get "/variants/:signed_blob_id/:signed_transforms/*_filename" do
-    with {:ok, blob_id} <- Verifier.verify_blob_id(conn, signed_blob_id),
-         {:ok, transforms} <- Verifier.verify_transforms(conn, signed_transforms),
-         {:ok, blob} <- fetch_blob(blob_id, opts),
-         variant <- Variant.new(conn, blob, transforms),
-         :ok <- process_variant(variant) do
-      redirect(conn, variant.key)
-    else
-      :error -> not_found(conn)
-    end
-  end
+  get "/variants/:signed_blob/:signed_transforms/*_filename" do
+    case Key.verify(signed_blob, signed_transforms) do
+      {:ok, variant} ->
+        case Variant.ensure_exists(variant) do
+          {:ok, key} ->
+            redirect(conn, key)
 
-  defp fetch_blob(blob_id, opts) do
-    case Keyword.fetch(opts, :repo) do
-      {:ok, repo} ->
-        case repo.get(Blob, blob_id) do
-          nil -> :error
-          blob -> {:ok, blob}
+          {:error, reason} ->
+            log_error(reason)
+            send_resp(conn, 400, "")
         end
 
       :error ->
-        raise "You need to pass a repo to `Upload.Router`"
-    end
-  end
-
-  defp process_variant(variant) do
-    with {:error, reason} <- Variant.process(variant) do
-      raise "Failed to transform key: #{variant.blob.key} (reason: #{inspect(reason)})"
+        send_resp(conn, 400, "")
     end
   end
 
@@ -62,11 +49,27 @@ defmodule Upload.Router do
         |> send_resp(302, "")
 
       {:error, reason} ->
-        raise "Failed to generate URL for key: #{key} (reason: #{inspect(reason)})"
+        log_error({:redirect, reason})
+        send_resp(conn, 422, "")
     end
   end
 
-  defp not_found(conn) do
-    send_resp(conn, 404, "")
+  defp log_error(reason) do
+    reason |> format_error() |> Utils.log(:error)
   end
+
+  defp format_error({:upload, reason}),
+    do: "Failed to upload the transformed image (reason: #{inspect(reason)})"
+
+  defp format_error({:download, reason}),
+    do: "Failed to download the original image (reason: #{inspect(reason)})"
+
+  defp format_error({:transform, reason}),
+    do: "Failed to apply transformations to the image (reason: #{inspect(reason)})"
+
+  defp format_error({:cleanup, reason}),
+    do: "Failed to cleanup temporary files (reason: #{inspect(reason)})"
+
+  defp format_error({:redirect, reason}),
+    do: "Failed to generate a signed URL (reason: #{inspect(reason)})"
 end

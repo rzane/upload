@@ -2,16 +2,20 @@ use Mix.Config
 
 config :logger, level: :info
 
-config :upload,
-  log: false,
-  ecto_repos: [Upload.Test.Repo],
-  analyzers: [Upload.Analyzer.Image, Upload.Analyzer.Video]
-
+# Configuration for the test suite
+config :upload, ecto_repos: [Upload.Test.Repo]
 config :upload, Upload.Test.Repo,
   adapter: Ecto.Adapters.Postgres,
   database: "upload_test",
   pool: Ecto.Adapters.SQL.Sandbox,
   priv: "test/support/"
+
+# Configuration for this package
+config :upload,
+  log: false,
+  repo: Upload.Test.Repo,
+  secret_key_base: "super secret",
+  analyzers: [Upload.Analyzer.Image, Upload.Analyzer.Video]
 
 config :upload, Upload.Storage,
   adapter: FileStore.Adapters.Memory,

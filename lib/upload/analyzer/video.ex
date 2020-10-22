@@ -16,11 +16,11 @@ defmodule Upload.Analyzer.Video do
       {:ok, extract(data)}
     else
       {:error, :enoent} ->
-        Utils.warn("Skipping video analysis because FFmpeg is not installed")
+        Utils.log("Skipping video analysis because FFmpeg is not installed", :warn)
         {:ok, %{}}
 
       {:error, {:exit, 1}} ->
-        Utils.warn("Skipping video analysis because FFmpeg doesn't support the file")
+        Utils.log("Skipping video analysis because FFmpeg doesn't support the file", :warn)
         {:ok, %{}}
 
       {:error, reason} ->

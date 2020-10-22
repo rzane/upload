@@ -17,11 +17,11 @@ defmodule Upload.Analyzer.Image do
         {:ok, parse(out)}
 
       {:error, :enoent} ->
-        Utils.warn("Skipping image analysis because ImageMagick is not installed")
+        Utils.log("Skipping image analysis because ImageMagick is not installed", :warn)
         {:ok, %{}}
 
       {:error, {:exit, 1}} ->
-        Utils.warn("Skipping image analysis because ImageMagick doesn't support the file")
+        Utils.log("Skipping image analysis because ImageMagick doesn't support the file", :warn)
         {:ok, %{}}
 
       {:error, reason} ->

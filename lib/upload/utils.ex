@@ -5,8 +5,20 @@ defmodule Upload.Utils do
 
   alias Upload.Analyzer.Null
 
-  def get_table_name do
+  def table_name do
     get_config(:table_name, "blobs")
+  end
+
+  def repo do
+    fetch_config!(:repo)
+  end
+
+  def secret_key_base do
+    case fetch_config!(:secret_key_base) do
+      {mod, fun} -> apply(mod, fun, [])
+      {mod, fun, args} -> apply(mod, fun, args)
+      key_base when is_binary(key_base) -> key_base
+    end
   end
 
   def analyze(path, content_type) do
@@ -33,11 +45,9 @@ defmodule Upload.Utils do
     e in [ErlangError] -> {:error, e.original}
   end
 
-  for level <- [:debug, :warn, :info, :error] do
-    def unquote(level)(message) do
-      if get_config(:log, true) do
-        Logger.log(unquote(level), message)
-      end
+  def log(message, level) do
+    if get_config(:log, true) do
+      Logger.log(level, message)
     end
   end
 

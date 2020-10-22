@@ -1,106 +1,74 @@
 defmodule Upload.Variant do
+  alias Upload.Key
   alias Upload.Blob
   alias Upload.Storage
   alias Upload.Transformer
-  alias Upload.Verifier
-  alias Upload.Utils
 
-  @enforce_keys [:key, :blob, :transforms]
-  defstruct [:key, :blob, :transforms]
+  @enforce_keys [:blob, :transforms]
+  defstruct [:blob, transforms: []]
 
+  @type key :: binary()
   @type transforms :: keyword()
-  @type t :: %__MODULE__{
-          key: binary(),
-          blob: Blob.t(),
-          transforms: transforms()
-        }
+  @type signed_transforms :: binary()
+  @type stage :: :download | :upload | :transform | :cleanup
+  @type t :: %__MODULE__{blob: Blob.t(), transforms: transforms()}
 
-  @spec new(Verifier.key_base(), Blob.t(), transforms()) :: t()
-  def new(conn, %Blob{} = blob, transforms) do
-    %__MODULE__{
-      blob: blob,
-      transforms: transforms,
-      key: produce_key(conn, blob, transforms)
-    }
+  @spec new(Blob.t(), transforms) :: t
+  def new(%Blob{} = blob, transforms \\ []) do
+    %__MODULE__{blob: blob, transforms: transforms}
   end
 
-  @spec process(t()) :: :ok | {:error, term()}
-  def process(%__MODULE__{} = variant) do
-    with :error <- stat(variant.key),
-         {:ok, blob_path} <- tempfile(),
-         :ok <- download(variant.blob.key, blob_path),
-         {:ok, variant_path} <- tempfile(),
-         :ok <- transform(blob_path, variant_path, variant.transforms),
-         :ok <- cleanup(blob_path),
-         :ok <- upload(variant_path, variant.key),
-         :ok <- cleanup(variant_path),
-         do: :ok
+  @spec transform(t, transforms) :: t
+  def transform(variant, transforms) do
+    %__MODULE__{variant | transforms: variant.transforms ++ transforms}
   end
 
-  defp stat(key) do
+  @spec ensure_exists(t) :: {:ok, key} | {:error, {stage, term}}
+  def ensure_exists(variant) do
+    key = Key.generate(variant)
+
     case Storage.stat(key) do
-      {:ok, _} ->
-        Utils.debug("Check if file exists at key: #{key} (yes)")
-        :ok
-
-      {:error, _} ->
-        Utils.debug("Check if file exists at key: #{key} (no)")
-        :error
+      {:ok, _} -> {:ok, key}
+      {:error, _} -> do_create(key, variant)
     end
   end
 
-  defp download(key, dest) do
-    case Storage.download(key, dest) do
-      :ok ->
-        Utils.info("Downloaded file from key: #{key}")
-        :ok
+  @spec create(t) :: {:ok, key} | {:error, {stage, term}}
+  def create(variant) do
+    variant
+    |> Key.generate()
+    |> do_create(variant)
+  end
 
-      {:error, reason} ->
-        Utils.error("Failed to download file from key: #{key}")
-        {:error, {:download, reason}}
+  defp do_create(key, variant) do
+    with {:ok, blob_path} <- tempfile(:download),
+         :ok <- download(variant.blob.key, blob_path),
+         {:ok, variant_path} <- tempfile(:transform),
+         :ok <- transform(blob_path, variant_path, variant.transforms),
+         :ok <- cleanup(blob_path),
+         :ok <- upload(variant_path, key),
+         :ok <- cleanup(variant_path),
+         do: {:ok, key}
+  end
+
+  defp tempfile(stage) do
+    case Plug.Upload.random_file("upload") do
+      {:ok, tmp} -> {:ok, tmp}
+      {reason, _, _} -> {:error, {stage, reason}}
+      {reason, _} -> {:error, {stage, reason}}
     end
   end
 
   defp transform(source, dest, transforms) do
-    case Transformer.transform(source, dest, transforms) do
-      :ok -> :ok
-      {:error, reason} -> {:error, {:transform, reason}}
-    end
+    source
+    |> Transformer.transform(dest, transforms)
+    |> tag(:transform)
   end
 
-  defp upload(path, key) do
-    case Storage.upload(path, key) do
-      :ok ->
-        Utils.info("Uploaded file to key: #{key}")
-        :ok
+  defp download(key, dest), do: key |> Storage.download(dest) |> tag(:download)
+  defp upload(path, key), do: path |> Storage.upload(key) |> tag(:upload)
+  defp cleanup(path), do: path |> File.rm() |> tag(:cleanup)
 
-      {:error, reason} ->
-        Utils.info("Failed to upload file to key: #{key}")
-        {:error, {:upload, reason}}
-    end
-  end
-
-  defp cleanup(file) do
-    case File.rm(file) do
-      :ok -> :ok
-      {:error, reason} -> {:error, {:cleanup, reason}}
-    end
-  end
-
-  defp tempfile do
-    case Plug.Upload.random_file("upload") do
-      {:ok, tmp} -> {:ok, tmp}
-      {reason, _, _} -> {:error, {:tempfile, reason}}
-      {reason, _} -> {:error, {:tempfile, reason}}
-    end
-  end
-
-  defp produce_key(conn, blob, transforms) do
-    signed_transforms = Verifier.sign_transforms(conn, transforms)
-    "variants/#{blob.key}/#{hexdigest(signed_transforms)}"
-  end
-
-  defp hexdigest(data) do
-    :sha256 |> :crypto.hash(data) |> Base.encode16() |> String.downcase()
-  end
+  defp tag(:ok, _action), do: :ok
+  defp tag({:error, reason}, action), do: {:error, {action, reason}}
 end
