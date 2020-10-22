@@ -33,7 +33,7 @@ defmodule Upload.Router do
 
           {:error, reason} ->
             log_error(reason)
-            send_resp(conn, 400, "")
+            send_resp(conn, 422, "")
         end
 
       :error ->
