@@ -4,7 +4,7 @@ defmodule Upload.Variant do
   alias Upload.Storage
   alias Upload.Transformer
 
-  @enforce_keys [:blob, :transforms]
+  @enforce_keys [:blob]
   defstruct [:blob, transforms: []]
 
   @type key :: binary()
