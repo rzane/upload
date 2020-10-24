@@ -41,12 +41,12 @@ defmodule Upload.Blob do
   end
 
   @spec from_plug(%{__struct__: Plug.Upload}) :: Changeset.t()
-  def from_plug(%{__struct__: Plug.Upload} = upload) do
+  def from_plug(%{__struct__: Plug.Upload} = upload) when is_binary(upload.path) do
     from_file(Map.from_struct(upload))
   end
 
   @spec from_path(Path.t()) :: Changeset.t()
-  def from_path(path) do
+  def from_path(path) when is_binary(path) do
     from_file(%{
       path: path,
       filename: Path.basename(path),
@@ -58,6 +58,7 @@ defmodule Upload.Blob do
   def changeset(%__MODULE__{} = upload, attrs \\ %{}) do
     upload
     |> Changeset.cast(attrs, @fields)
+    |> put_key_lazy()
     |> Changeset.validate_required(@required_fields)
   end
 
@@ -65,12 +66,18 @@ defmodule Upload.Blob do
     %__MODULE__{}
     |> Changeset.cast(attrs, @file_fields)
     |> Changeset.validate_required(@required_file_fields)
-    |> Changeset.put_change(:key, Key.generate())
-    |> Changeset.prepare_changes(&put_file_info/1)
+    |> put_key_lazy()
+    |> put_file_info()
   end
 
-  defp put_file_info(changeset) do
-    path = Changeset.fetch_change!(changeset, :path)
+  defp put_key_lazy(changeset) do
+    case Changeset.get_change(changeset, :key) do
+      nil -> Changeset.put_change(:key, Key.generate())
+      _ -> changeset
+    end
+  end
+
+  defp put_file_info(%Changeset{changes: %{path: path}}) when is_binary(path) do
     content_type = Changeset.get_change(changeset, :content_type)
 
     with {:ok, %{size: byte_size}} <- File.stat(path),
@@ -81,6 +88,9 @@ defmodule Upload.Blob do
       |> Changeset.put_change(:checksum, checksum)
       |> Changeset.put_change(:metadata, metadata)
     else
+      {:error, :enoent} ->
+        Changeset.add_error(changeset, :path, "does not exist")
+
       {:error, reason} ->
         Changeset.add_error(changeset, :path, "is invalid", reason: reason)
     end
