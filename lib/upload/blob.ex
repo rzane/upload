@@ -3,6 +3,9 @@ defmodule Upload.Blob do
   An `Ecto.Schema` that represents an uploaded file in the database.
   """
 
+  # FIXME: Don't trust the `content_type`. Files should be identified
+  # with the `file` command line utility.
+
   use Ecto.Schema
 
   alias Ecto.Changeset
