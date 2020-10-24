@@ -2,9 +2,25 @@ defmodule Upload.Changeset do
   alias Ecto.Changeset
   alias Upload.Blob
 
-  @type cast_attachment_opts :: [{:invalid_message, binary}]
+  @type changeset :: Changeset.t()
+  @type field :: atom
+  @type error :: binary | Changeset.error()
+  @type validation :: (any -> [error])
+  @type size :: {number, :byte | :kilobyte | :megabyte | :gigabyte | :terabyte}
 
-  @spec cast_attachment(Changeset.t(), atom, cast_attachment_opts) :: Changeset.t()
+  @type cast_opts :: [{:invalid_message, binary}]
+  @type size_opts :: [{:less_than, size} | {:message, binary}]
+  @type type_opts :: [{:allow, [binary]} | {:forbid, [binary]} | {:message, binary}]
+
+  @unit_conversions %{
+    byte: 1,
+    kilobyte: 1.0e3,
+    megabyte: 1.0e6,
+    gigabyte: 1.0e9,
+    terabyte: 1.0e12
+  }
+
+  @spec cast_attachment(changeset, atom, cast_opts) :: changeset
   def cast_attachment(%Changeset{} = changeset, field, opts \\ []) do
     invalid_message = Keyword.get(opts, :invalid_message, "is invalid")
 
@@ -23,38 +39,51 @@ defmodule Upload.Changeset do
     end
   end
 
-  @spec validate_attachment(Changeset.t(), atom(), (Changeset.t() -> Changeset.t())) ::
-          Changeset.t()
-  def validate_attachment(changeset, field, fun) when is_function(fun) do
-    case Changeset.get_change(changeset, field) do
-      %Changeset{} = blob_changeset ->
-        Changeset.put_change(changeset, field, fun.(blob_changeset))
-
-      _ ->
-        changeset
-    end
-  end
-
-  @spec validate_content_type(Changeset.t(), atom, Enum.t(), keyword) :: Changeset.t()
-  def validate_content_type(changeset, field, types, opts \\ []) do
-    validate_attachment(changeset, field, fn blob_changeset ->
-      Changeset.validate_inclusion(blob_changeset, :content_type, types, opts)
+  @spec validate_attachment(changeset, field, field, validation) :: changeset
+  def validate_attachment(changeset, field, blob_field, validation) do
+    Changeset.validate_change(changeset, field, fn _, blob_changeset ->
+      case Changeset.get_change(blob_changeset, blob_field) do
+        nil -> []
+        value -> [{field, validation.(value)}]
+      end
     end)
   end
 
-  @spec validate_byte_size(Changeset.t(), atom, keyword) :: Changeset.t()
-  def validate_byte_size(changeset, field, opts \\ []) do
-    opts = Enum.map(opts, fn {k, v} -> {k, convert_units(v)} end)
+  @spec validate_attachment_type(changeset, field, type_opts) :: changeset
+  def validate_attachment_type(changeset, field, opts) do
+    {message, opts} = Keyword.pop(opts, :message, "is not a supported file type")
 
-    validate_attachment(changeset, field, fn blob_changeset ->
-      Changeset.validate_number(blob_changeset, :byte_size, opts)
+    validate_attachment(changeset, field, :content_type, fn type ->
+      Enum.flat_map(opts, fn
+        {:allow, types} ->
+          if type in types, do: [], else: [{message, allowed: types}]
+
+        {:forbid, types} ->
+          if type in types, do: [{message, forbidden: types}], else: []
+
+        {key, _} ->
+          raise ArgumentError, """
+          unknown option #{inspect(key)} given to validate_attachment_type/3
+
+          The supported options are `:message`, `:allow` and `:forbid`.
+          """
+      end)
     end)
   end
 
-  defp convert_units({n, :byte}), do: n
-  defp convert_units({n, :kilobyte}), do: n * 1.0e3
-  defp convert_units({n, :megabyte}), do: n * 1.0e6
-  defp convert_units({n, :gigabyte}), do: n * 1.0e9
-  defp convert_units({n, :terabyte}), do: n * 1.0e12
-  defp convert_units(value), do: value
+  @spec validate_attachment_size(changeset, field, size_opts) :: changeset
+  def validate_attachment_size(changeset, field, opts) do
+    size = {number, unit} = Keyword.fetch!(opts, :smaller_than)
+    message = Keyword.get(opts, :message, "must be smaller than %{number} %{unit}(s)")
+    max_byte_size = to_bytes(size)
+
+    validate_attachment(changeset, field, :byte_size, fn
+      byte_size when byte_size < max_byte_size -> []
+      _ -> [{message, number: number, unit: unit}]
+    end)
+  end
+
+  for {unit, multiplier} <- @unit_conversions do
+    defp to_bytes({n, unquote(unit)}), do: n * unquote(multiplier)
+  end
 end
