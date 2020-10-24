@@ -4,6 +4,7 @@ config :logger, level: :info
 
 # Configuration for the test suite
 config :upload, ecto_repos: [Upload.Test.Repo]
+
 config :upload, Upload.Test.Repo,
   adapter: Ecto.Adapters.Postgres,
   database: "upload_test",
