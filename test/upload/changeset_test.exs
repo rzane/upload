@@ -1,14 +1,19 @@
 defmodule Upload.ChangesetTest do
   use Upload.DataCase
 
+  import Ecto.Changeset
   import Upload.Changeset
 
   alias Upload.Test.Person
 
   @path fixture_path("test.txt")
-  @upload %Plug.Upload{filename: "test.txt", path: @path}
+  @upload %Plug.Upload{
+    path: @path,
+    filename: "test.txt",
+    content_type: "text/plain"
+  }
 
-  describe "cast_attachment/2" do
+  describe "cast_attachment/3" do
     test "accepts a Plug.Upload" do
       changeset = change_person(%{avatar: @upload})
       assert changeset.valid?
@@ -38,28 +43,56 @@ defmodule Upload.ChangesetTest do
     end
   end
 
-  describe "validate_content_type/4" do
-    test "accepts included types" do
-      changeset = change_content_type("text/plain")
-      assert changeset.valid?
-    end
+  describe "validate_blob/3" do
+    test "allows validations to be run against the blob's changeset" do
+      changeset =
+        validate_avatar(%{avatar: @upload}, fn blob_changeset ->
+          validate_inclusion(blob_changeset, :content_type, ["image/png"])
+        end)
 
-    test "rejects excluded types" do
-      changeset = change_content_type("image/png")
-      refute changeset.valid?
-      assert errors_on(changeset) == %{avatar: %{content_type: ["is invalid"]}}
+      assert errors_on(changeset.changes.avatar) == %{content_type: ["is invalid"]}
     end
   end
 
-  defp change_content_type(type) do
-    %{avatar: %Plug.Upload{@upload | content_type: type}}
-    |> change_person()
-    |> validate_content_type(:avatar, ["text/plain"])
+  describe "validate_content_type/4" do
+    test "produces errors for invalid content type" do
+      changeset =
+        %{avatar: @upload}
+        |> change_person()
+        |> validate_content_type(:avatar, ["image/png"])
+
+      assert errors_on(changeset.changes.avatar) == %{content_type: ["is invalid"]}
+    end
+
+    @tag :pending
+    test "accepts a custom message"
+  end
+
+  describe "validate_byte_size/3" do
+    test "produces errors for files that don't match the specified size" do
+      changeset =
+        %{avatar: @upload}
+        |> change_person()
+        |> validate_byte_size(:avatar, greater_than: {5, :megabyte})
+
+      assert errors_on(changeset.changes.avatar) == %{
+               byte_size: ["must be greater than 5.0e6"]
+             }
+    end
+
+    @tag :pending
+    test "accepts a custom message"
   end
 
   defp change_person(attrs, opts \\ []) do
     %Person{}
     |> Person.changeset(attrs)
     |> cast_attachment(:avatar, opts)
+  end
+
+  defp validate_avatar(attrs, fun) do
+    attrs
+    |> change_person()
+    |> validate_attachment(:avatar, fun)
   end
 end

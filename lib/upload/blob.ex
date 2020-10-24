@@ -16,7 +16,7 @@ defmodule Upload.Blob do
           id: id(),
           key: key(),
           filename: binary(),
-          content_type: binary(),
+          content_type: binary() | nil,
           byte_size: integer(),
           checksum: binary(),
           metadata: map(),
@@ -24,10 +24,8 @@ defmodule Upload.Blob do
         }
 
   @fields ~w(key filename content_type byte_size checksum)a
-  @required_fields ~w(key filename byte_size checksum)a
-
   @file_fields ~w(path filename content_type)a
-  @required_file_fields ~w(path filename)a
+  @required_fields ~w(key filename byte_size checksum)a
 
   schema Utils.table_name() do
     field :key, :string
@@ -40,8 +38,8 @@ defmodule Upload.Blob do
     timestamps(updated_at: false)
   end
 
-  @spec from_plug(%{__struct__: Plug.Upload}) :: Changeset.t()
-  def from_plug(%{__struct__: Plug.Upload} = upload) when is_binary(upload.path) do
+  @spec from_plug(Plug.Upload.t()) :: Changeset.t()
+  def from_plug(%Plug.Upload{} = upload) do
     from_file(Map.from_struct(upload))
   end
 
@@ -65,19 +63,19 @@ defmodule Upload.Blob do
   defp from_file(attrs) do
     %__MODULE__{}
     |> Changeset.cast(attrs, @file_fields)
-    |> Changeset.validate_required(@required_file_fields)
     |> put_key_lazy()
     |> put_file_info()
+    |> Changeset.validate_required(@required_fields)
   end
 
   defp put_key_lazy(changeset) do
     case Changeset.get_change(changeset, :key) do
-      nil -> Changeset.put_change(:key, Key.generate())
+      nil -> Changeset.put_change(changeset, :key, Key.generate())
       _ -> changeset
     end
   end
 
-  defp put_file_info(%Changeset{changes: %{path: path}}) when is_binary(path) do
+  defp put_file_info(%Changeset{changes: %{path: path}} = changeset) when is_binary(path) do
     content_type = Changeset.get_change(changeset, :content_type)
 
     with {:ok, %{size: byte_size}} <- File.stat(path),
