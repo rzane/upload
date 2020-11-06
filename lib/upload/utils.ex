@@ -3,8 +3,6 @@ defmodule Upload.Utils do
 
   require Logger
 
-  alias Upload.Analyzer.Null
-
   def table_name do
     get_config(:table_name, "blobs")
   end
@@ -21,10 +19,16 @@ defmodule Upload.Utils do
     end
   end
 
+  def analyze(_path, nil), do: {:ok, %{}}
+
   def analyze(path, content_type) do
-    analyzers = get_config(:analyzers, [])
-    analyzer = Enum.find(analyzers, Null, & &1.accept?(content_type))
-    analyzer.analyze(path)
+    :analyzers
+    |> get_config([])
+    |> Enum.find_value({:ok, %{}}, fn analyzer ->
+      if analyzer.accept?(content_type) do
+        analyzer.analyze(path)
+      end
+    end)
   end
 
   def json_decode(data) do
