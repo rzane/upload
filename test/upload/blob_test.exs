@@ -5,11 +5,7 @@ defmodule Upload.BlobTest do
   alias Upload.Test.Repo
 
   @path fixture_path("test.txt")
-  @upload %Plug.Upload{
-    path: @path,
-    filename: "test.txt",
-    content_type: "text/plain"
-  }
+  @upload %Plug.Upload{path: @path, filename: "racecar.jpg"}
 
   describe "from_path/1" do
     test "builds a changeset" do
@@ -18,13 +14,8 @@ defmodule Upload.BlobTest do
       assert changeset.changes.path
       assert changeset.changes.filename
       assert changeset.changes.content_type
-    end
-
-    test "collects file information before being saved" do
-      changeset = Blob.from_path(@path)
-      blob = Repo.insert!(changeset)
-      assert blob.byte_size
-      assert blob.checksum
+      assert changeset.changes.byte_size
+      assert changeset.changes.checksum
     end
   end
 
@@ -35,13 +26,8 @@ defmodule Upload.BlobTest do
       assert changeset.changes.path
       assert changeset.changes.filename
       assert changeset.changes.content_type
-    end
-
-    test "collects file information before being saved" do
-      changeset = Blob.from_plug(@upload)
-      blob = Repo.insert!(changeset)
-      assert blob.byte_size
-      assert blob.checksum
+      assert changeset.changes.byte_size
+      assert changeset.changes.checksum
     end
   end
 

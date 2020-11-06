@@ -43,23 +43,12 @@ defmodule Upload.ChangesetTest do
     end
   end
 
-  describe "validate_blob/3" do
-    test "allows validations to be run against the blob's changeset" do
-      changeset =
-        validate_avatar(%{avatar: @upload}, fn blob_changeset ->
-          validate_inclusion(blob_changeset, :content_type, ["image/png"])
-        end)
-
-      assert errors_on(changeset.changes.avatar) == %{content_type: ["is invalid"]}
-    end
-  end
-
-  describe "validate_content_type/4" do
+  describe "validate_attachment_type/4" do
     test "produces errors for invalid content type" do
       changeset =
         %{avatar: @upload}
         |> change_person()
-        |> validate_content_type(:avatar, ["image/png"])
+        |> validate_attachment_type(:avatar, ["image/png"])
 
       assert errors_on(changeset.changes.avatar) == %{content_type: ["is invalid"]}
     end
@@ -68,12 +57,12 @@ defmodule Upload.ChangesetTest do
     test "accepts a custom message"
   end
 
-  describe "validate_byte_size/3" do
+  describe "validate_attachment_size/3" do
     test "produces errors for files that don't match the specified size" do
       changeset =
         %{avatar: @upload}
         |> change_person()
-        |> validate_byte_size(:avatar, greater_than: {5, :megabyte})
+        |> validate_attachment_size(:avatar, greater_than: {5, :megabyte})
 
       assert errors_on(changeset.changes.avatar) == %{
                byte_size: ["must be greater than 5.0e6"]
@@ -88,11 +77,5 @@ defmodule Upload.ChangesetTest do
     %Person{}
     |> Person.changeset(attrs)
     |> cast_attachment(:avatar, opts)
-  end
-
-  defp validate_avatar(attrs, fun) do
-    attrs
-    |> change_person()
-    |> validate_attachment(:avatar, fun)
   end
 end
