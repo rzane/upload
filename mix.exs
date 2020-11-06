@@ -43,6 +43,7 @@ defmodule Upload.Mixfile do
     [
       {:ecto, "~> 3.0"},
       {:file_store, "~> 0.2"},
+      {:file_type, "~> 0.1"},
       {:mime, "~> 1.2"},
       {:plug, "~> 1.0"},
 

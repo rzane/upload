@@ -27,7 +27,7 @@ defmodule Upload.Blob do
         }
 
   @fields ~w(key filename content_type byte_size checksum)a
-  @file_fields ~w(path filename content_type)a
+  @file_fields ~w(path filename)a
   @required_fields ~w(key filename byte_size checksum)a
 
   schema Utils.table_name() do
@@ -48,11 +48,7 @@ defmodule Upload.Blob do
 
   @spec from_path(Path.t()) :: Changeset.t()
   def from_path(path) when is_binary(path) do
-    from_file(%{
-      path: path,
-      filename: Path.basename(path),
-      content_type: MIME.from_path(path)
-    })
+    from_file(%{path: path, filename: Path.basename(path)})
   end
 
   @spec changeset(t(), map()) :: Changeset.t()
@@ -79,21 +75,29 @@ defmodule Upload.Blob do
   end
 
   defp put_file_info(%Changeset{changes: %{path: path}} = changeset) when is_binary(path) do
-    content_type = Changeset.get_change(changeset, :content_type)
-
     with {:ok, %{size: byte_size}} <- File.stat(path),
+         {:ok, content_type} <- get_content_type(path),
          {:ok, checksum} <- FileStore.Stat.checksum_file(path),
          {:ok, metadata} <- Utils.analyze(path, content_type) do
       changeset
       |> Changeset.put_change(:byte_size, byte_size)
       |> Changeset.put_change(:checksum, checksum)
       |> Changeset.put_change(:metadata, metadata)
+      |> Changeset.put_change(:content_type, content_type)
     else
       {:error, :enoent} ->
         Changeset.add_error(changeset, :path, "does not exist")
 
       {:error, reason} ->
         Changeset.add_error(changeset, :path, "is invalid", reason: reason)
+    end
+  end
+
+  defp get_content_type(path) do
+    case FileType.from_path(path) do
+      {:ok, {_, mime}} -> {:ok, mime}
+      {:error, :unrecognized} -> {:ok, "application/octet-stream"}
+      {:error, reason} -> {:error, reason}
     end
   end
 end
