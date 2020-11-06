@@ -1,9 +1,6 @@
 defmodule Upload.ChangesetTest do
   use Upload.DataCase
-
-  import Ecto.Changeset
   import Upload.Changeset
-
   alias Upload.Test.Person
 
   @path fixture_path("test.txt")
@@ -44,30 +41,22 @@ defmodule Upload.ChangesetTest do
   end
 
   describe "validate_attachment_type/4" do
-    test "produces errors for invalid content type" do
-      changeset =
-        %{avatar: @upload}
-        |> change_person()
-        |> validate_attachment_type(:avatar, ["image/png"])
+    @tag :pending
+    test "allow"
 
-      assert errors_on(changeset.changes.avatar) == %{content_type: ["is invalid"]}
-    end
+    @tag :pending
+    test "forbid"
 
     @tag :pending
     test "accepts a custom message"
   end
 
   describe "validate_attachment_size/3" do
-    test "produces errors for files that don't match the specified size" do
-      changeset =
-        %{avatar: @upload}
-        |> change_person()
-        |> validate_attachment_size(:avatar, greater_than: {5, :megabyte})
+    @tag :pending
+    test "less than"
 
-      assert errors_on(changeset.changes.avatar) == %{
-               byte_size: ["must be greater than 5.0e6"]
-             }
-    end
+    @tag :pending
+    test "greater than"
 
     @tag :pending
     test "accepts a custom message"

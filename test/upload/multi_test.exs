@@ -4,6 +4,9 @@ defmodule Upload.MultiTest do
   alias Upload.Test.Repo
   alias Upload.Test.Person
 
+  import Ecto.Multi
+  import Upload.Multi
+
   @path fixture_path("test.txt")
   @upload %Plug.Upload{path: @path, filename: "test.txt"}
 
@@ -31,29 +34,18 @@ defmodule Upload.MultiTest do
     refute person.avatar.key in list_uploaded_keys()
   end
 
-  test "purge/3 ignores nil" do
-    person = create_person(%{avatar: nil})
-    assert {:ok, _} = purge_person(person)
-  end
-
   defp purge_person(person) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.delete(:person, person)
-    |> Upload.Multi.purge(:avatar, person.avatar)
+    new()
+    |> delete(:person, person)
+    |> purge(:avatar, person.avatar)
     |> Repo.transaction()
   end
 
   defp upload_person(changeset) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:person, changeset)
-    |> Upload.Multi.upload(:person, :avatar)
+    new()
+    |> insert(:person, changeset)
+    |> upload(:avatar, fn ctx -> ctx.person.avatar end)
     |> Repo.transaction()
-  end
-
-  defp create_person(attrs) do
-    attrs
-    |> change_person()
-    |> Repo.insert!()
   end
 
   defp change_person(attrs) do

@@ -1,8 +1,6 @@
 defmodule Upload.BlobTest do
-  use Upload.DataCase
-
+  use Upload.DataCase, async: true
   alias Upload.Blob
-  alias Upload.Test.Repo
 
   @path fixture_path("test.txt")
   @upload %Plug.Upload{path: @path, filename: "racecar.jpg"}
@@ -42,7 +40,6 @@ defmodule Upload.BlobTest do
     }
 
     @errors %{
-      key: ["can't be blank"],
       byte_size: ["can't be blank"],
       checksum: ["can't be blank"],
       filename: ["can't be blank"]

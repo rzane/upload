@@ -42,7 +42,7 @@ defmodule Upload.Mixfile do
   defp deps do
     [
       {:ecto, "~> 3.0"},
-      {:file_store, "~> 0.2"},
+      {:file_store, github: "rzane/file_store"},
       {:file_type, "~> 0.1"},
       {:mime, "~> 1.2"},
       {:plug, "~> 1.0"},
