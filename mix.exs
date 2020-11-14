@@ -12,7 +12,6 @@ defmodule Upload.Mixfile do
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
       dialyzer: [
-        plt_add_apps: [:ecto, :ex_aws, :ex_aws_s3],
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
       ]
     ]
