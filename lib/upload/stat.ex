@@ -1,6 +1,9 @@
 defmodule Upload.Stat do
   defstruct [:path, :filename, :byte_size, :checksum, :metadata, :content_type]
 
+  @chunk_size 2_048
+  @octet_stream "application/octet-stream"
+
   @type filename :: binary()
   @type checksum :: binary()
   @type byte_size :: non_neg_integer()
@@ -38,18 +41,19 @@ defmodule Upload.Stat do
     end
   end
 
-  @spec stat!(Path.t()) :: t()
-  def stat!(path) do
-    case stat(path) do
-      {:ok, stat} ->
-        stat
+  def put(stat, _key, nil) do
+    stat
+  end
 
-      {:error, reason} when is_atom(reason) ->
-        raise File.Error, path: path, reason: reason, action: "read file stats"
+  def put(stat, :content_type, preferred_type) do
+    Map.update!(stat, :content_type, fn
+      @octet_stream -> preferred_type
+      detected_type -> detected_type
+    end)
+  end
 
-      {:error, exception} when is_struct(exception) ->
-        raise exception
-    end
+  def put(stat, key, value) do
+    Map.put(stat, key, value)
   end
 
   defp get_byte_size(path) do
@@ -75,7 +79,6 @@ defmodule Upload.Stat do
     end
   end
 
-  @octet_stream "application/octet-stream"
   defp detect_type(io) do
     case FileType.from_io(io) do
       {:ok, {_, detected_type}} -> {:ok, detected_type}
@@ -84,7 +87,6 @@ defmodule Upload.Stat do
     end
   end
 
-  @chunk_size 2_048
   defp compute_checksum(io) do
     io
     |> IO.binstream(@chunk_size)

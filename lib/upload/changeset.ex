@@ -1,8 +1,7 @@
 defmodule Upload.Changeset do
-  alias Ecto.Changeset
-  alias Upload.Blob
+  import Ecto.Changeset
 
-  @type changeset :: Changeset.t()
+  @type changeset :: Ecto.t()
   @type field :: atom
   @type error :: binary | Changeset.error()
   @type validation :: (any -> [error])
@@ -20,19 +19,28 @@ defmodule Upload.Changeset do
     terabyte: 1.0e12
   }
 
-  @spec cast_attachment(changeset, atom, cast_opts) :: changeset
-  def cast_attachment(%Changeset{} = changeset, field, opts \\ []) do
+  def put_attachment(changeset, field, upload) do
+    blob_changeset =
+      upload
+      |> Upload.stat!()
+      |> Upload.change_blob()
+
+    put_assoc(changeset, field, blob_changeset)
+  end
+
+  @spec cast_attachment(changeset(), field(), cast_opts()) :: changeset()
+  def cast_attachment(changeset, field, opts \\ []) do
     invalid_message = Keyword.get(opts, :invalid_message, "is invalid")
 
     case Map.fetch(changeset.params, to_string(field)) do
-      {:ok, %{__struct__: Plug.Upload} = plug_upload} ->
-        Changeset.put_assoc(changeset, field, Blob.from_plug(plug_upload))
+      {:ok, %Plug.Upload{} = plug_upload} ->
+        put_attachment(changeset, field, plug_upload)
 
       {:ok, nil} ->
-        Changeset.put_assoc(changeset, field, nil)
+        put_assoc(changeset, field, nil)
 
       {:ok, _other} ->
-        Changeset.add_error(changeset, field, invalid_message)
+        add_error(changeset, field, invalid_message)
 
       :error ->
         changeset
@@ -41,8 +49,8 @@ defmodule Upload.Changeset do
 
   @spec validate_attachment(changeset, field, field, validation) :: changeset
   def validate_attachment(changeset, field, blob_field, validation) do
-    Changeset.validate_change(changeset, field, fn _, blob_changeset ->
-      case Changeset.get_change(blob_changeset, blob_field) do
+    validate_change(changeset, field, fn _, blob_changeset ->
+      case get_change(blob_changeset, blob_field) do
         nil -> []
         value -> [{field, validation.(value)}]
       end
