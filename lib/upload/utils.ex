@@ -23,7 +23,7 @@ defmodule Upload.Utils do
   end
 
   def cmd(cmd, args) do
-    case System.cmd(cmd, args) do
+    case System.cmd(cmd, args, stderr_to_stdout: true) do
       {out, 0} -> {:ok, out}
       {_, status} -> {:error, %ExitError{cmd: cmd, status: status}}
     end

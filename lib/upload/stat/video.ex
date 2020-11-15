@@ -4,14 +4,14 @@ defmodule Upload.Stat.Video do
   @flags ~w(-print_format json -show_streams -show_format -v error)
 
   @impl true
-  def stat(path, "video/" <> _) do
+  def stat(path, "video/" <> _), do: stat(path)
+  def stat(_path, _content_type), do: {:ok, nil}
+
+  @doc false
+  def stat(path) do
     with {:ok, data} <- ffprobe(@flags ++ [path]) do
       {:ok, data |> decode!() |> extract()}
     end
-  end
-
-  def stat(_path, _content_type) do
-    {:ok, nil}
   end
 
   defp decode!(data) do

@@ -25,12 +25,6 @@ defmodule Upload.DataCase do
     Enum.to_list(Upload.Storage.list!())
   end
 
-  def fixture_path(name) do
-    "../fixtures"
-    |> Path.expand(__DIR__)
-    |> Path.join(name)
-  end
-
   def errors_on(changeset) do
     Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
       Enum.reduce(opts, message, fn {key, value}, acc ->

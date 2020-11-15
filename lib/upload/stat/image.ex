@@ -5,14 +5,14 @@ defmodule Upload.Stat.Image do
   @rotated ~w(RightTop LeftBottom)
 
   @impl true
-  def stat(path, "image/" <> _) do
+  def stat(path, "image/" <> _), do: stat(path)
+  def stat(_path, _content_type), do: {:ok, nil}
+
+  @doc false
+  def stat(path) do
     with {:ok, out} <- identify(@flags ++ [path]) do
       {:ok, parse(out)}
     end
-  end
-
-  def stat(_path, _content_type) do
-    {:ok, nil}
   end
 
   defp parse(out) do

@@ -2,7 +2,7 @@ defmodule Upload.BlobTest do
   use Upload.DataCase, async: true
   alias Upload.Blob
 
-  @path fixture_path("test.txt")
+  @path "test/fixtures/test.txt"
   @upload %Plug.Upload{path: @path, filename: "racecar.jpg"}
 
   describe "from_path/1" do

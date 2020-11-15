@@ -7,7 +7,7 @@ defmodule Upload.MultiTest do
   import Ecto.Multi
   import Upload.Multi
 
-  @path fixture_path("test.txt")
+  @path "test/fixtures/test.txt"
   @upload %Plug.Upload{path: @path, filename: "test.txt"}
 
   test "upload/3" do

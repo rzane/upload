@@ -3,7 +3,7 @@ defmodule Upload.ChangesetTest do
   import Upload.Changeset
   alias Upload.Test.Person
 
-  @path fixture_path("test.txt")
+  @path "test/fixtures/test.txt"
   @upload %Plug.Upload{
     path: @path,
     filename: "test.txt",
