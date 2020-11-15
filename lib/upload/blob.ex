@@ -3,14 +3,12 @@ defmodule Upload.Blob do
   An `Ecto.Schema` that represents an uploaded file in the database.
   """
 
-  # FIXME: Don't trust the `content_type`. Files should be identified
-  # with the `file` command line utility.
-
   use Ecto.Schema
 
-  alias Ecto.Changeset
+  import Ecto.Changeset
+
   alias Upload.Key
-  alias Upload.Utils
+  alias Upload.Stat
 
   @type key :: binary()
   @type id :: integer() | binary()
@@ -27,10 +25,9 @@ defmodule Upload.Blob do
         }
 
   @fields ~w(key filename content_type byte_size checksum)a
-  @file_fields ~w(path filename)a
   @required_fields ~w(key filename byte_size checksum)a
 
-  schema Utils.table_name() do
+  schema "blobs" do
     field :key, :string
     field :filename, :string
     field :content_type, :string
@@ -41,63 +38,57 @@ defmodule Upload.Blob do
     timestamps(updated_at: false)
   end
 
-  @spec from_plug(Plug.Upload.t()) :: Changeset.t()
-  def from_plug(%Plug.Upload{} = upload) do
-    from_file(Map.from_struct(upload))
-  end
-
-  @spec from_path(Path.t()) :: Changeset.t()
-  def from_path(path) when is_binary(path) do
-    from_file(%{path: path, filename: Path.basename(path)})
-  end
-
-  @spec changeset(t(), map()) :: Changeset.t()
+  @spec changeset(%__MODULE__{}, map()) :: Ecto.Changeset.t()
   def changeset(%__MODULE__{} = upload, attrs \\ %{}) do
     upload
-    |> Changeset.cast(attrs, @fields)
-    |> put_key_lazy()
-    |> Changeset.validate_required(@required_fields)
+    |> cast(attrs, @fields)
+    |> put_new_key()
+    |> validate_required(@required_fields)
   end
 
-  defp from_file(attrs) do
-    %__MODULE__{}
-    |> Changeset.cast(attrs, @file_fields)
-    |> put_key_lazy()
-    |> put_file_info()
-    |> Changeset.validate_required(@required_fields)
-  end
-
-  defp put_key_lazy(changeset) do
-    case Changeset.get_change(changeset, :key) do
-      nil -> Changeset.put_change(changeset, :key, Key.generate())
+  defp put_new_key(changeset) do
+    case get_field(changeset, :key) do
+      nil -> put_change(changeset, :key, Key.generate())
       _ -> changeset
     end
   end
 
-  defp put_file_info(%Changeset{changes: %{path: path}} = changeset) when is_binary(path) do
-    with {:ok, %{size: byte_size}} <- File.stat(path),
-         {:ok, content_type} <- get_content_type(path),
-         {:ok, checksum} <- FileStore.Stat.checksum_file(path),
-         {:ok, metadata} <- Utils.analyze(path, content_type) do
-      changeset
-      |> Changeset.put_change(:byte_size, byte_size)
-      |> Changeset.put_change(:checksum, checksum)
-      |> Changeset.put_change(:metadata, metadata)
-      |> Changeset.put_change(:content_type, content_type)
-    else
-      {:error, :enoent} ->
-        Changeset.add_error(changeset, :path, "does not exist")
+  @spec from_plug(Plug.Upload.t()) :: Ecto.Changeset.t()
+  def from_plug(%Plug.Upload{path: path} = upload) when is_binary(path) do
+    opts =
+      upload
+      |> Map.take([:filename, :content_type])
+      |> Enum.into([])
 
-      {:error, reason} ->
-        Changeset.add_error(changeset, :path, "is invalid", reason: reason)
+    from_path(path, opts)
+  end
+
+  @spec from_path(Path.t()) :: {:ok, Ecto.Changeset.t()} | {:error, Stat.error()}
+  def from_path(path) when is_binary(path) do
+    from_path(path, [])
+  end
+
+  defp from_path(path, opts) do
+    with {:ok, stat} <- Stat.stat(path) do
+      {:ok, from_stat(stat, opts)}
     end
   end
 
-  defp get_content_type(path) do
-    case FileType.from_path(path) do
-      {:ok, {_, mime}} -> {:ok, mime}
-      {:error, :unrecognized} -> {:ok, "application/octet-stream"}
-      {:error, reason} -> {:error, reason}
-    end
+  defp from_stat(stat, opts) do
+    changeset(%__MODULE__{}, stat |> Map.from_struct() |> merge(opts))
   end
+
+  defp merge(attrs, opts) do
+    opts
+    |> Enum.reduce(opts, attrs, fn {key, opt}, acc ->
+      Map.update!(acc, &merge(key, &1, opt))
+    end)
+    |> Enum.into(%{})
+  end
+
+  @octet_stream "application/octet-stream"
+  defp merge(_key, opt, nil), do: opt
+  defp merge(:content_type, opt, @octet_stream), do: opt
+  defp merge(:content_type, _opt, value), do: value
+  defp merge(_key, opt, _value), do: opt
 end

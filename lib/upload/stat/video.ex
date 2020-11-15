@@ -1,31 +1,21 @@
-defmodule Upload.Analyzer.Video do
-  @behaviour Upload.Analyzer
-
-  alias Upload.Utils
+defmodule Upload.Stat.Video do
+  @behaviour Upload.Stat
 
   @flags ~w(-print_format json -show_streams -show_format -v error)
 
   @impl true
-  def accept?("video/" <> _), do: true
-  def accept?(_), do: false
-
-  @impl true
-  def analyze(path) do
-    with {:ok, out} <- Utils.cmd(:ffprobe, @flags ++ [path]),
-         {:ok, data} <- Utils.json_decode(out) do
-      {:ok, extract(data)}
-    else
-      {:error, :enoent} ->
-        Utils.log("Skipping video analysis because FFmpeg is not installed", :warn)
-        {:ok, %{}}
-
-      {:error, {:exit, 1}} ->
-        Utils.log("Skipping video analysis because FFmpeg doesn't support the file", :warn)
-        {:ok, %{}}
-
-      {:error, reason} ->
-        {:error, reason}
+  def stat(path, "video/" <> _) do
+    with {:ok, data} <- ffprobe(@flags ++ [path]) do
+      {:ok, data |> decode!() |> extract()}
     end
+  end
+
+  def stat(_path, _content_type) do
+    {:ok, nil}
+  end
+
+  defp decode!(data) do
+    Upload.Utils.json_library().decode!(data)
   end
 
   defp extract(data) do
@@ -75,5 +65,12 @@ defmodule Upload.Analyzer.Video do
       [n, d] -> [n, d]
       _ -> nil
     end
+  end
+
+  defp ffprobe(args) do
+    :upload
+    |> Application.get_env(__MODULE__, [])
+    |> Keyword.get(:ffprobe, "ffprobe")
+    |> Upload.Utils.cmd(args)
   end
 end

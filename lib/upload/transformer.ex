@@ -15,11 +15,8 @@ defmodule Upload.Transformer do
       {:ok, _} ->
         :ok
 
-      {:error, :enoent} ->
-        raise "Transformations cannot be applied because mogrify is not installed."
-
-      {:error, reason} ->
-        {:error, reason}
+      {:error, exception} ->
+        raise exception
     end
   end
 
