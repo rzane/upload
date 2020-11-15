@@ -15,8 +15,7 @@ config :upload, Upload.Test.Repo,
 config :upload,
   log: false,
   repo: Upload.Test.Repo,
-  secret_key_base: "super secret",
-  metadata: [Upload.Stat.Image, Upload.Stat.Video]
+  secret_key_base: "super secret"
 
 config :upload, Upload.Storage,
   adapter: FileStore.Adapters.Memory,

@@ -44,7 +44,7 @@ defmodule Upload.Stat.VideoTest do
   setup do: configure([])
 
   for {path, meta} <- @fixtures do
-    test path do
+    test Path.basename(path) do
       path = unquote(path)
       meta = unquote(Macro.escape(meta))
       mime = MIME.from_path(path)
