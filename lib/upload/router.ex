@@ -25,19 +25,19 @@ defmodule Upload.Router do
   end
 
   get "/variants/:signed_blob/:signed_transforms/*_filename" do
-    case Key.verify(signed_blob, signed_transforms) do
-      {:ok, variant} ->
-        case Variant.ensure_exists(variant) do
-          {:ok, key} ->
-            redirect(conn, key)
-
-          {:error, reason} ->
-            log_error(reason)
-            send_resp(conn, 422, "")
-        end
-
+    with {:ok, variant} <- Key.verify(signed_blob, signed_transforms),
+         {:ok, key} <- Variant.ensure_exists(variant) do
+      redirect(conn, key)
+    else
       :error ->
         send_resp(conn, 400, "")
+
+      {:error, error} ->
+        error
+        |> Exception.message()
+        |> Utils.log(:error)
+
+        send_resp(conn, 422, "")
     end
   end
 
@@ -49,27 +49,8 @@ defmodule Upload.Router do
         |> send_resp(302, "")
 
       {:error, reason} ->
-        log_error({:redirect, reason})
+        Utils.log("Failed to generate a signed URL: #{inspect(reason)}", :error)
         send_resp(conn, 422, "")
     end
   end
-
-  defp log_error(reason) do
-    reason |> format_error() |> Utils.log(:error)
-  end
-
-  defp format_error({:upload, reason}),
-    do: "Failed to upload the transformed image (reason: #{inspect(reason)})"
-
-  defp format_error({:download, reason}),
-    do: "Failed to download the original image (reason: #{inspect(reason)})"
-
-  defp format_error({:transform, reason}),
-    do: "Failed to apply transformations to the image (reason: #{inspect(reason)})"
-
-  defp format_error({:cleanup, reason}),
-    do: "Failed to cleanup temporary files (reason: #{inspect(reason)})"
-
-  defp format_error({:redirect, reason}),
-    do: "Failed to generate a signed URL (reason: #{inspect(reason)})"
 end

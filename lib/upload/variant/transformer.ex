@@ -1,22 +1,16 @@
-defmodule Upload.Transformer do
+defmodule Upload.Variant.Transformer do
   @moduledoc """
   Applies transformations to an image.
 
   See: https://imagemagick.org/script/command-line-options.php
   """
 
-  alias Upload.Utils
-
   def transform(source, destination, transforms) do
     args = Enum.reduce(transforms, [], &reduce/2)
     args = args ++ ["-write", destination, source]
 
-    case Utils.cmd(:mogrify, args) do
-      {:ok, _} ->
-        :ok
-
-      {:error, exception} ->
-        raise exception
+    with {:ok, _} <- mogrify(args) do
+      :ok
     end
   end
 
@@ -27,5 +21,12 @@ defmodule Upload.Transformer do
   # FIXME: Whitelist command-line options
   defp to_flag(name) do
     name |> to_string() |> String.replace("_", "-")
+  end
+
+  defp mogrify(args) do
+    :upload
+    |> Application.get_env(__MODULE__, [])
+    |> Keyword.get(:mogrify, "mogrify")
+    |> Upload.Utils.cmd(args)
   end
 end

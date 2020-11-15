@@ -24,11 +24,15 @@ defmodule Upload.Utils do
 
   def cmd(cmd, args) do
     case System.cmd(cmd, args, stderr_to_stdout: true) do
-      {out, 0} -> {:ok, out}
-      {_, status} -> {:error, %ExitError{cmd: cmd, status: status}}
+      {out, 0} ->
+        {:ok, out}
+
+      {_, status} ->
+        {:error, %ExitError{cmd: cmd, status: status}}
     end
   rescue
-    e in ErlangError -> {:error, %CommandError{cmd: cmd, reason: e.original}}
+    e in [ErlangError] ->
+      {:error, %CommandError{cmd: cmd, reason: e.original}}
   end
 
   def log(message, level) do

@@ -4,7 +4,7 @@ defmodule Upload.VariantTest do
   alias Upload.Storage
   alias Upload.Blob
   alias Upload.Variant
-  alias Upload.Analyzer.Image
+  alias Upload.Stat.Image
   alias FileStore.Adapters.Memory
 
   @blob %Blob{key: "abc"}
@@ -34,7 +34,7 @@ defmodule Upload.VariantTest do
   end
 
   describe "create/1" do
-    @path Path.expand("../fixtures/racecar.jpg", __DIR__)
+    @path "test/fixtures/image.jpg"
 
     setup do
       start_supervised!(Memory)
@@ -48,7 +48,7 @@ defmodule Upload.VariantTest do
       assert {:ok, _} = Storage.stat(key)
       assert {:ok, tmp} = Plug.Upload.random_file("upload_test")
       assert :ok = Storage.download(key, tmp)
-      assert {:ok, %{width: 10, height: 7}} = Image.analyze(tmp)
+      assert {:ok, %{width: 10, height: 7}} = Image.stat(tmp)
       assert :ok = File.rm(tmp)
     end
   end

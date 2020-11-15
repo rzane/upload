@@ -2,7 +2,10 @@ defmodule Upload.Variant do
   alias Upload.Key
   alias Upload.Blob
   alias Upload.Storage
-  alias Upload.Transformer
+  alias Upload.UploadError
+  alias Upload.DownloadError
+  alias Upload.RandomFileError
+  alias Upload.Variant.Transformer
 
   @enforce_keys [:blob]
   defstruct [:blob, transforms: []]
@@ -10,8 +13,13 @@ defmodule Upload.Variant do
   @type key :: binary()
   @type transforms :: keyword()
   @type signed_transforms :: binary()
-  @type stage :: :download | :upload | :transform | :cleanup
   @type t :: %__MODULE__{blob: Blob.t(), transforms: transforms()}
+
+  @type error ::
+          %RandomFileError{}
+          | %UploadError{}
+          | %DownloadError{}
+          | %File.Error{}
 
   @spec new(Blob.t(), transforms) :: t
   def new(%Blob{} = blob, transforms \\ []) do
@@ -23,7 +31,7 @@ defmodule Upload.Variant do
     %__MODULE__{variant | transforms: variant.transforms ++ transforms}
   end
 
-  @spec ensure_exists(t) :: {:ok, key} | {:error, {stage, term}}
+  @spec ensure_exists(t) :: {:ok, key} | {:error, error()}
   def ensure_exists(variant) do
     key = Key.generate(variant)
 
@@ -33,7 +41,7 @@ defmodule Upload.Variant do
     end
   end
 
-  @spec create(t) :: {:ok, key} | {:error, {stage, term}}
+  @spec create(t) :: {:ok, key} | {:error, error()}
   def create(variant) do
     variant
     |> Key.generate()
@@ -41,9 +49,9 @@ defmodule Upload.Variant do
   end
 
   defp do_create(key, variant) do
-    with {:ok, blob_path} <- tempfile(:download),
+    with {:ok, blob_path} <- create_random_file(),
          :ok <- download(variant.blob.key, blob_path),
-         {:ok, variant_path} <- tempfile(:transform),
+         {:ok, variant_path} <- create_random_file(),
          :ok <- transform(blob_path, variant_path, variant.transforms),
          :ok <- cleanup(blob_path),
          :ok <- upload(variant_path, key),
@@ -51,24 +59,32 @@ defmodule Upload.Variant do
          do: {:ok, key}
   end
 
-  defp tempfile(stage) do
+  defp create_random_file do
     case Plug.Upload.random_file("upload") do
       {:ok, tmp} -> {:ok, tmp}
-      {reason, _, _} -> {:error, {stage, reason}}
-      {reason, _} -> {:error, {stage, reason}}
+      reason -> {:error, %RandomFileError{reason: reason}}
     end
   end
 
   defp transform(source, dest, transforms) do
-    source
-    |> Transformer.transform(dest, transforms)
-    |> tag(:transform)
+    Transformer.transform(source, dest, transforms)
   end
 
-  defp download(key, dest), do: key |> Storage.download(dest) |> tag(:download)
-  defp upload(path, key), do: path |> Storage.upload(key) |> tag(:upload)
-  defp cleanup(path), do: path |> File.rm() |> tag(:cleanup)
+  defp download(key, path) do
+    with {:error, reason} <- Storage.download(key, path) do
+      {:error, %DownloadError{key: key, path: path, reason: reason}}
+    end
+  end
 
-  defp tag(:ok, _action), do: :ok
-  defp tag({:error, reason}, action), do: {:error, {action, reason}}
+  defp upload(path, key) do
+    with {:error, reason} <- Storage.upload(path, key) do
+      {:error, %UploadError{key: key, path: path, reason: reason}}
+    end
+  end
+
+  defp cleanup(path) do
+    with {:error, reason} <- File.rm(path) do
+      %File.Error{path: path, reason: reason, action: "remove temporary file"}
+    end
+  end
 end

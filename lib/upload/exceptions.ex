@@ -24,3 +24,30 @@ defmodule Upload.CommandError do
     "Command `#{inspect(cmd)}` failed: #{reason}"
   end
 end
+
+defmodule Upload.DownloadError do
+  defexception [:key, :path, :reason]
+
+  @impl true
+  def message(%{key: key, path: path, reason: reason}) do
+    "Failed to download #{inspect(key)} to #{inspect(path)}: #{inspect(reason)}"
+  end
+end
+
+defmodule Upload.UploadError do
+  defexception [:key, :path, :reason]
+
+  @impl true
+  def message(%{key: key, path: path, reason: reason}) do
+    "Failed to upload #{inspect(path)} to #{inspect(key)}: #{inspect(reason)}"
+  end
+end
+
+defmodule Upload.RandomFileError do
+  defexception [:reason]
+
+  @impl true
+  def message(%{reason: reason}) do
+    "Failed to create temporary file: #{inspect(reason)}"
+  end
+end
