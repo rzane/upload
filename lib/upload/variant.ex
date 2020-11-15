@@ -2,8 +2,6 @@ defmodule Upload.Variant do
   alias Upload.Key
   alias Upload.Blob
   alias Upload.Storage
-  alias Upload.UploadError
-  alias Upload.DownloadError
   alias Upload.RandomFileError
   alias Upload.Variant.Transformer
 
@@ -17,8 +15,8 @@ defmodule Upload.Variant do
 
   @type error ::
           %RandomFileError{}
-          | %UploadError{}
-          | %DownloadError{}
+          | %FileStore.UploadError{}
+          | %FileStore.DownloadError{}
           | %File.Error{}
 
   @spec new(Blob.t(), transforms) :: t
@@ -50,11 +48,11 @@ defmodule Upload.Variant do
 
   defp do_create(key, variant) do
     with {:ok, blob_path} <- create_random_file(),
-         :ok <- download(variant.blob.key, blob_path),
+         :ok <- Storage.download(variant.blob.key, blob_path),
          {:ok, variant_path} <- create_random_file(),
          :ok <- transform(blob_path, variant_path, variant.transforms),
          :ok <- cleanup(blob_path),
-         :ok <- upload(variant_path, key),
+         :ok <- Storage.upload(variant_path, key),
          :ok <- cleanup(variant_path),
          do: {:ok, key}
   end
@@ -68,18 +66,6 @@ defmodule Upload.Variant do
 
   defp transform(source, dest, transforms) do
     Transformer.transform(source, dest, transforms)
-  end
-
-  defp download(key, path) do
-    with {:error, reason} <- Storage.download(key, path) do
-      {:error, %DownloadError{key: key, path: path, reason: reason}}
-    end
-  end
-
-  defp upload(path, key) do
-    with {:error, reason} <- Storage.upload(path, key) do
-      {:error, %UploadError{key: key, path: path, reason: reason}}
-    end
   end
 
   defp cleanup(path) do
