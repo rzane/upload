@@ -19,28 +19,50 @@ defmodule Upload.Changeset do
     terabyte: 1.0e12
   }
 
-  def put_attachment(changeset, field, upload) do
-    blob_changeset =
-      upload
-      |> Upload.stat!()
-      |> Upload.change_blob()
+  @spec put_attachment(changeset(), field(), Path.t()) :: changeset()
+  def put_attachment(changeset, field, path) when is_binary(path) do
+    put_attachment(changeset, field, Upload.stat!(path))
+  end
 
+  @spec put_attachment(changeset(), field(), Plug.Upload.t()) :: changeset()
+  def put_attachment(changeset, field, %Plug.Upload{} = upload) do
+    put_attachment(changeset, field, Upload.stat!(upload))
+  end
+
+  @spec put_attachment(changeset(), field(), Upload.Stat.t()) :: changeset()
+  def put_attachment(changeset, field, %Upload.Stat{} = stat) do
+    put_assoc(changeset, field, Upload.change_blob(stat))
+  end
+
+  @spec put_attachment(changeset(), field(), Ecto.Changeset.t()) :: changeset()
+  def put_attachment(changeset, field, %Ecto.Changeset{} = blob_changeset) do
     put_assoc(changeset, field, blob_changeset)
+  end
+
+  @spec put_attachment(changeset(), field(), Upload.Blob.t()) :: changeset()
+  def put_attachment(changeset, field, %Upload.Blob{} = blob) do
+    put_assoc(changeset, field, blob)
   end
 
   @spec cast_attachment(changeset(), field(), cast_opts()) :: changeset()
   def cast_attachment(changeset, field, opts \\ []) do
-    invalid_message = Keyword.get(opts, :invalid_message, "is invalid")
-
     case Map.fetch(changeset.params, to_string(field)) do
-      {:ok, %Plug.Upload{} = plug_upload} ->
-        put_attachment(changeset, field, plug_upload)
+      {:ok, %Plug.Upload{} = upload} ->
+        put_attachment(changeset, field, upload)
 
       {:ok, nil} ->
-        put_assoc(changeset, field, nil)
+        if Keyword.get(opts, :required, false) do
+          message = Keyword.get(opts, :required_message, "can't be blank")
+          meta = [validation: :required]
+          add_error(changeset, field, message, meta)
+        else
+          put_assoc(changeset, field, nil)
+        end
 
       {:ok, _other} ->
-        add_error(changeset, field, invalid_message)
+        message = Keyword.get(opts, :invalid_message, "is invalid")
+        meta = [validation: :assoc, type: :map]
+        add_error(changeset, field, message, meta)
 
       :error ->
         changeset
