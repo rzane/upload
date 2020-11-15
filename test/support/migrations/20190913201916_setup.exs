@@ -5,7 +5,7 @@ defmodule Upload.Test.Repo.Migrations.Setup do
     create table(:blobs) do
       add(:key, :string, null: false)
       add(:filename, :string, null: false)
-      add(:content_type, :string)
+      add(:content_type, :string, null: false)
       add(:metadata, :map)
       add(:byte_size, :integer, null: false)
       add(:checksum, :string, null: false)

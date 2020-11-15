@@ -22,7 +22,7 @@ defmodule Upload.Blob do
           path: binary() | nil
         }
 
-  @fields ~w(key filename content_type byte_size checksum)a
+  @fields ~w(key filename content_type byte_size checksum path)a
   @required_fields @fields -- ~w(metadata path)a
 
   schema "blobs" do

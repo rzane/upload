@@ -11,6 +11,12 @@ defmodule Upload.ChangesetTest do
   }
 
   describe "cast_attachment/3" do
+    @invalid {"is invalid", validation: :assoc, type: :map}
+    @invalid_custom {"boom", validation: :assoc, type: :map}
+
+    @required {"can't be blank", validation: :required}
+    @required_custom {"boom", validation: :required}
+
     test "accepts a Plug.Upload" do
       changeset = change_person(%{avatar: @upload})
       assert changeset.valid?
@@ -21,22 +27,34 @@ defmodule Upload.ChangesetTest do
       assert changeset.changes.avatar.changes.filename
     end
 
+    test "rejects invalid values" do
+      changeset = change_person(%{avatar: @path})
+      refute changeset.valid?
+      assert changeset.errors[:avatar] == @invalid
+    end
+
+    test "rejects invalid values with a custom message" do
+      changeset = change_person(%{avatar: 42}, invalid_message: "boom")
+      refute changeset.valid?
+      assert changeset.errors[:avatar] == @invalid_custom
+    end
+
     test "accepts nil" do
       changeset = change_person(%{avatar: nil})
       assert changeset.valid?
       assert changeset.changes.avatar == nil
     end
 
-    test "rejects a path" do
-      changeset = change_person(%{avatar: @path})
+    test "rejects `nil` when required" do
+      changeset = change_person(%{avatar: nil}, required: true)
       refute changeset.valid?
-      assert changeset.errors == [{:avatar, {"is invalid", []}}]
+      assert changeset.errors[:avatar] == @required
     end
 
-    test "rejects invalid values with a custom message" do
-      changeset = change_person(%{avatar: 42}, invalid_message: "boom")
+    test "rejects `nil` when a custom message when required" do
+      changeset = change_person(%{avatar: nil}, required: true, required_message: "boom")
       refute changeset.valid?
-      assert changeset.errors == [{:avatar, {"boom", []}}]
+      assert changeset.errors[:avatar] == @required_custom
     end
   end
 
